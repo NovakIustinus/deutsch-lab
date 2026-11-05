@@ -1,0 +1,13 @@
+:root{--blue:#0b5cad;--blue2:#083f78;--sky:#bfe3ff;--cream:#fff8e7;--red:#d62b2b;--gold:#f2b705;--green:#2e7d32;--ink:#1d2433;
+--m:#2f6fd6;--f:#d9363e;--n:#2e9e4f;}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;color:var(--ink);background:var(--cream);
+ background-image:linear-gradient(45deg,rgba(11,92,173,.07) 25%,transparent 25%,transparent 75%,rgba(11,92,173,.07) 75%),
+ linear-gradient(45deg,rgba(11,92,173,.07) 25%,transparent 25%,transparent 75%,rgba(11,92,173,.07) 75%);
+ background-size:56px 56px;background-position:0 0,28px 28px}
+.fraktur{font-family:"UnifrakturCook","Old English Text MT","Luminari",Georgia,serif;font-weight:700}
+.btn{font:inherit;font-weight:700;border:3px solid var(--blue2);background:#fff;color:var(--blue2);border-radius:14px;padding:.7em 1.2em;
+ cursor:pointer;box-shadow:0 4px 0 var(--blue2);text-decoration:none;display:inline-block}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--blue2)}
+.btn.primary{background:var(--red);border-color:#8d1414;color:#fff;box-shadow:0 4px 0 #8d1414}
+.btn.primary:active{box-shadow:0 1px 0 #8d1414}
