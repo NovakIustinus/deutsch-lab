@@ -41,6 +41,7 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
 .t .h{color:#fff}.t .hm{background:var(--m)}.t .hf{background:var(--f)}.t .hn{background:var(--n)}
 .t .rc{color:#fff;text-align:left;padding-left:8px}
 .t td{background:#f1f5fb}
+.t td.rc.gm{background:var(--m)}.t td.rc.gf{background:var(--f)}.t td.rc.gn{background:var(--n)}
 .t td.rc.c0{background:#a67c52}.t td.rc.c1{background:#0f8a8a}.t td.rc.c2{background:#d6457a}
 .t td.e b{color:var(--red)}
 .t td small{display:block;font-weight:600;color:#556;font-size:.8rem}
@@ -79,17 +80,22 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
   <h2 class="fraktur" style="font-size:2rem">Kurz auffrischen!</h2>
   <div class="small">Quick refresh before you start</div>
 
+  <div class="nm"><label for="name">1 · Dein Name? (your name)</label>
+   <input type="text" id="name" maxlength="20" placeholder="type your name to start" autocomplete="off" style="margin-bottom:0"></div>
+  <p style="margin:6px 0"><button class="btn primary go" style="font-size:1.2rem" disabled>Los geht’s!</button></p>
+
+  <div class="sec" style="text-align:center">2 · The tables</div>
   <div class="tl">der-words — the (der / die / das)</div>
-  <table class="t"><tr><th></th><th class="h hm">masc</th><th class="h hf">fem</th><th class="h hn">neut</th></tr>
-   <tr><td class="rc c0">Nom</td><td class="e">der</td><td class="e">die</td><td class="e">das</td></tr>
-   <tr><td class="rc c1">Akk</td><td class="e">den</td><td class="e">die</td><td class="e">das</td></tr>
-   <tr><td class="rc c2">Dat</td><td class="e">dem</td><td class="e">der</td><td class="e">dem</td></tr></table>
+  <table class="t"><tr><th></th><th class="h c0">Nom</th><th class="h c1">Akk</th><th class="h c2">Dat</th></tr>
+   <tr><td class="rc gm">masc</td><td class="e">der</td><td class="e">den</td><td class="e">dem</td></tr>
+   <tr><td class="rc gf">fem</td><td class="e">die</td><td class="e">die</td><td class="e">der</td></tr>
+   <tr><td class="rc gn">neut</td><td class="e">das</td><td class="e">das</td><td class="e">dem</td></tr></table>
 
   <div class="tl">ein-words — ending added to the stem (example: <b>mein</b>)</div>
-  <table class="t"><tr><th></th><th class="h hm">masc</th><th class="h hf">fem</th><th class="h hn">neut</th></tr>
-   <tr><td class="rc c0">Nom</td><td class="e">mein<small>(no ending)</small></td><td class="e">mein<b>e</b><small>-e</small></td><td class="e">mein<small>(no ending)</small></td></tr>
-   <tr><td class="rc c1">Akk</td><td class="e">mein<b>en</b><small>-en ← changes!</small></td><td class="e">mein<b>e</b><small>-e</small></td><td class="e">mein<small>(no ending)</small></td></tr>
-   <tr><td class="rc c2">Dat</td><td class="e">mein<b>em</b><small>-em</small></td><td class="e">mein<b>er</b><small>-er</small></td><td class="e">mein<b>em</b><small>-em</small></td></tr></table>
+  <table class="t"><tr><th></th><th class="h c0">Nom</th><th class="h c1">Akk</th><th class="h c2">Dat</th></tr>
+   <tr><td class="rc gm">masc</td><td class="e">mein<small>(no ending)</small></td><td class="e">mein<b>en</b><small>-en ← changes!</small></td><td class="e">mein<b>em</b><small>-em</small></td></tr>
+   <tr><td class="rc gf">fem</td><td class="e">mein<b>e</b><small>-e</small></td><td class="e">mein<b>e</b><small>-e</small></td><td class="e">mein<b>er</b><small>-er</small></td></tr>
+   <tr><td class="rc gn">neut</td><td class="e">mein<small>(no ending)</small></td><td class="e">mein<small>(no ending)</small></td><td class="e">mein<b>em</b><small>-em</small></td></tr></table>
   <div class="small">Same pattern for ein, kein, dein, sein, ihr, unser, euer (→ eur-), Ihr.</div>
 
   <div class="tl">The stems</div>
@@ -100,11 +106,9 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
    <tr><td class="wh">unser</td><td class="wh">our</td><td class="wh">euer</td><td class="wh">your (ihr)</td></tr>
    <tr><td class="wh">Ihr</td><td class="wh">your (Sie)</td><td class="wh" colspan="2">euer drops the e: <b>eure</b>, <b>euren</b>, <b>eurem</b>, <b>eurer</b></td></tr></table>
 
-  <div class="nm"><label for="name">Dein Name? (your name)</label>
-   <input type="text" id="name" maxlength="20" placeholder="type your name to start" autocomplete="off" style="margin-bottom:0"></div>
-  <div class="note" style="text-align:left">Each word: tap the gender and type the English → then type the right form. 1 point first try · ½ point second try · 0 after that (keep going until it's right).</div>
-  <p><button class="btn primary" id="go" style="font-size:1.2rem" disabled>Los geht’s!</button></p>
-  <div class="sec">🏆 Last 10 players</div><div id="lb0"></div>
+  <div class="note" style="text-align:left"><b>Points per word (max 3):</b> gender tap 1 if first try · English meaning 1 if first try · case answer 1 first try, ½ second, ¼ third, then 0. You must get everything right to move on.</div>
+  <p><button class="btn primary go" style="font-size:1.2rem" disabled>Los geht’s!</button></p>
+  <div class="sec" style="text-align:center">3 · 🏆 Last 10 players</div><div id="lb0"></div>
  </div>
 
  <div id="s-gender" class="card hidden">
@@ -140,10 +144,11 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
   <p class="res" id="verdict"></p>
   <p class="small" id="best"></p>
   <div class="stats">
-   <div class="st s1"><b id="n1">0</b><span>first try<br>1 pt</span></div>
-   <div class="st s2"><b id="n2">0</b><span>second try<br>½ pt</span></div>
-   <div class="st s3"><b id="n3">0</b><span>3+ tries<br>0 pt</span></div>
+   <div class="st s1" style="background:var(--m)"><b id="n1">0</b><span>Gender<br>/ 10</span></div>
+   <div class="st s2" style="background:#7b4fb3"><b id="n2">0</b><span>English<br>/ 10</span></div>
+   <div class="st s3" style="background:#0f8a8a"><b id="n3">0</b><span>Case<br>/ 10</span></div>
   </div>
+  <div class="small" id="tryline"></div>
   <div class="sec">By case</div>
   <div class="cs" id="cs"></div>
   <div class="sec">Every word</div>

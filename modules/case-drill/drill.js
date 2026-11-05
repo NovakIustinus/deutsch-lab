@@ -3,25 +3,26 @@ const $=id=>document.getElementById(id), N=10, ART={m:"der",f:"die",n:"das"};
 const NOTE=["Nominativ = the subject: who/what does the verb.",
  "Akkusativ = the direct object: who/what gets acted on (I see the dog → den Hund). Only masculine changes: der→den, ein→einen.",
  "Dativ = the indirect object: to/for whom (I give the dog a bone → dem Hund). Feminine → der, masc/neut → dem."];
-const PTS=[1,0.5];
+const PTS=[1,0.5,0.25], MAX=N*3;
 let gaveUp=false,gaveUpE=false,player="",sess,i,log,gOk,eOk,tries,engTries,wrongTaps,wrongTyped;
 function show(id){["s-intro","s-gender","s-case","s-done"].forEach(s=>$(s).classList.toggle("hidden",s!==id));window.scrollTo(0,0);}
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
-const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
-const KEY="caseDrillBoard";
+const fmt=n=>String(Number(n.toFixed(2)));
+const KEY="caseDrillBoard30";
 function loadBoard(){try{return JSON.parse(localStorage.getItem(KEY))||[];}catch(e){return [];}}
 function saveBoard(b){try{localStorage.setItem(KEY,JSON.stringify(b));}catch(e){}}
 function renderBoard(id,hl){
   const b=loadBoard().slice().reverse();
   $(id).innerHTML=b.length?"<table class='lb'><tr><th>#</th><th>Name</th><th>Score</th><th style='text-align:right'>%</th></tr>"+
-    b.map((r,k)=>"<tr"+(r.t===hl?" class='me'":"")+"><td>"+(k+1)+"</td><td>"+esc(r.name)+"</td><td>"+fmt(r.score)+"/"+N+"</td><td class='pc'>"+r.pct+"%</td></tr>").join("")+"</table>"
+    b.map((r,k)=>"<tr"+(r.t===hl?" class='me'":"")+"><td>"+(k+1)+"</td><td>"+esc(r.name)+"</td><td>"+fmt(r.score)+"/"+MAX+"</td><td class='pc'>"+r.pct+"%</td></tr>").join("")+"</table>"
     :"<div class='lbempty'>Nobody yet — be the first!</div>";
 }
 function nameOk(){ return $("name").value.trim().length>0; }
-$("name").addEventListener("input",()=>{ $("go").disabled=!nameOk(); });
+const GO=document.querySelectorAll(".go"); const setGo=()=>GO.forEach(b=>b.disabled=!nameOk());
+$("name").addEventListener("input",setGo);
 $("name").addEventListener("keydown",e=>{ if(e.key==="Enter"&&nameOk()){e.preventDefault();begin();} });
 try{ $("name").value=localStorage.getItem("caseDrillName")||""; }catch(e){}
-$("go").disabled=!nameOk();
+setGo();
 function begin(){ player=$("name").value.trim(); try{localStorage.setItem("caseDrillName",player);}catch(e){} start(); }
 function start(){sess=Drill.makeSession(window.WORDS,N);i=0;log=[];round();}
 function round(){
@@ -77,10 +78,10 @@ $("form").addEventListener("submit",e=>{
     $("resline").innerHTML=msg; $("result").classList.remove("hidden"); $("next").classList.add("hidden");
     inp.select(); return;
   }
-  const pts=PTS[tries-1]||0;
-  log.push({q,tries,pts,wrong:wrongTyped.slice()});
+  const cp=PTS[tries-1]||0, gp=wrongTaps===0?1:0, ep=engTries===0?1:0, pts=gp+ep+cp;
+  log.push({q,tries,cp,gp,ep,pts,wrong:wrongTyped.slice()});
   $("ans").disabled=true; $("check").classList.add("hidden");
-  $("resline").innerHTML="<span class='ok'>Richtig! ✔ "+q.answer+" "+q.noun+"</span><br><span class='small'>"+(pts===1?"+1 point":pts?"+½ point (second try)":"no point")+"</span>";
+  $("resline").innerHTML="<span class='ok'>Richtig! ✔ "+q.answer+" "+q.noun+"</span><br><span class='small'>"+"Gender +"+fmt(gp)+" · English +"+fmt(ep)+" · Case +"+fmt(cp)+" = <b>"+fmt(pts)+"</b> / 3"+"</span>";
   $("next").classList.remove("hidden"); $("next").textContent=i===N-1?"Ergebnis →":"Weiter →";
   $("result").classList.remove("hidden"); $("next").focus();
 });
@@ -91,26 +92,29 @@ $("etip").addEventListener("click",e=>{ if(e.target.id==="giveupE"){ gaveUpE=tru
 $("next").addEventListener("click",()=>{ i++; i<N?round():done(); });
 function done(){
   $("bar").style.width="100%"; $("count").textContent=N+"/"+N;
-  const score=log.reduce((a,l)=>a+l.pts,0), pct=Math.round(score/N*100);
+  const score=log.reduce((a,l)=>a+l.pts,0), pct=Math.round(score/MAX*100);
   const col=pct>=80?"#2e7d32":pct>=50?"#e09b00":"#d62b2b";
   $("ring").style.setProperty("--p",pct); $("ring").style.setProperty("--col",col);
-  $("pct").textContent=pct+"%"; $("pct").style.color=col; $("frac").textContent=fmt(score)+" / "+N;
-  $("verdict").textContent=(player?player+": ":"")+pct===100?"Perfekt! Du bist ein echter Bayer! 🥨🍺":pct>=80?"Sehr gut! Prost! 🍺":pct>=60?"Gut – weiter so! 🥨":pct>=40?"Geht so… noch eine Brezn?":"Oje. Zurück in die Schule! 📚";
+  $("pct").textContent=pct+"%"; $("pct").style.color=col; $("frac").textContent=fmt(score)+" / "+MAX;
+  $("verdict").textContent=(player?player+": ":"")+(pct===100?"Perfekt! Du bist ein echter Bayer! 🥨🍺":pct>=80?"Sehr gut! Prost! 🍺":pct>=60?"Gut – weiter so! 🥨":pct>=40?"Geht so… noch eine Brezn?":"Oje. Zurück in die Schule! 📚");
   let best=0; try{best=+localStorage.getItem("caseDrillBestPct")||0; if(pct>best){best=pct;localStorage.setItem("caseDrillBestPct",best);}}catch(e){}
   $("best").textContent=best?"Best on this device: "+best+"%":"";
-  $("n1").textContent=log.filter(l=>l.tries===1).length; $("n2").textContent=log.filter(l=>l.tries===2).length; $("n3").textContent=log.filter(l=>l.tries>2).length;
+  const sum=k=>fmt(log.reduce((a,l)=>a+l[k],0));
+  $("n1").textContent=sum("gp"); $("n2").textContent=sum("ep"); $("n3").textContent=sum("cp");
+  const cnt=f=>log.filter(f).length;
+  $("tryline").textContent="Case answers — 1st try: "+cnt(l=>l.tries===1)+" · 2nd: "+cnt(l=>l.tries===2)+" · 3rd: "+cnt(l=>l.tries===3)+" · 4+: "+cnt(l=>l.tries>3);
   $("cs").innerHTML=Drill.CASES.map((c,k)=>{const L=log.filter(l=>l.q.caseIdx===k);
-    return "<div class='c"+k+"'><b>"+(L.length?fmt(L.reduce((a,l)=>a+l.pts,0))+"/"+L.length:"–")+"</b><span>"+c+"</span></div>";}).join("");
-  $("review").innerHTML=log.map(l=>{const q=l.q, r=l.tries===1?1:l.tries===2?2:3;
-    return "<div class='row r"+r+"'><span class='pts'>"+(l.pts===1?"+1":l.pts?"+½":"0")+"</span>"
+    return "<div class='c"+k+"'><b>"+(L.length?fmt(L.reduce((a,l)=>a+l.pts,0))+"/"+L.length*3:"–")+"</b><span>"+c+"</span></div>";}).join("");
+  $("review").innerHTML=log.map(l=>{const q=l.q, r=l.pts===3?1:l.pts>=1.5?2:3;
+    return "<div class='row r"+r+"'><span class='pts'>"+fmt(l.pts)+"/3</span>"
      +"<b>"+Drill.CASES[q.caseIdx]+"</b> · <span style='color:var(--"+q.gender+");font-weight:800'>"+ART[q.gender]+" "+q.noun+"</span> <i>("+esc(q.english)+")</i><br>"
-     +"“"+q.det.label+" "+q.english+"” → <b>"+q.answer+" "+q.noun+"</b>"
+     +"“"+q.det.label+" "+q.english+"” → <b>"+q.answer+" "+q.noun+"</b><br><span class='small'>G "+fmt(l.gp)+" · E "+fmt(l.ep)+" · C "+fmt(l.cp)+"</span>"
      +(l.wrong.length?"<br><i>you typed: "+l.wrong.map(esc).join(", ")+"</i>":"")+"</div>";}).join("");
   const t=Date.now(), board=loadBoard(); board.push({name:player,score,pct,t}); saveBoard(board.slice(-10));
   renderBoard("lb1",t);
   show("s-done");
 }
-$("go").addEventListener("click",begin);
+GO.forEach(b=>b.addEventListener("click",()=>{ if(nameOk()) begin(); }));
 $("again").addEventListener("click",()=>{renderBoard("lb0");start();});
 $("count").textContent="–"; renderBoard("lb0"); show("s-intro");
 })();
