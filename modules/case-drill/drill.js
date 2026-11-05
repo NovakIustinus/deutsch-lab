@@ -8,14 +8,26 @@ let gaveUp=false,gaveUpE=false,player="",sess,i,log,gOk,eOk,tries,engTries,wrong
 function show(id){["s-intro","s-gender","s-case","s-done"].forEach(s=>$(s).classList.toggle("hidden",s!==id));window.scrollTo(0,0);}
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
 const fmt=n=>String(Number(n.toFixed(2)));
-const KEY="caseDrillBoard30";
-function loadBoard(){try{return JSON.parse(localStorage.getItem(KEY))||[];}catch(e){return [];}}
-function saveBoard(b){try{localStorage.setItem(KEY,JSON.stringify(b));}catch(e){}}
-function renderBoard(id,hl){
-  const b=loadBoard().slice().reverse();
-  $(id).innerHTML=b.length?"<table class='lb'><tr><th>#</th><th>Name</th><th>Score</th><th style='text-align:right'>%</th></tr>"+
-    b.map((r,k)=>"<tr"+(r.t===hl?" class='me'":"")+"><td>"+(k+1)+"</td><td>"+esc(r.name)+"</td><td>"+fmt(r.score)+"/"+MAX+"</td><td class='pc'>"+r.pct+"%</td></tr>").join("")+"</table>"
+const KEY="caseDrillTop30", URL_=(window.LEADERBOARD_URL||"").trim();
+const top10=a=>a.slice().sort((x,y)=>y.score-x.score||x.t-y.t).slice(0,10);
+function localBoard(){try{return top10(JSON.parse(localStorage.getItem(KEY))||[]);}catch(e){return [];}}
+async function getBoard(){
+  if(!URL_) return localBoard();
+  const r=await fetch(URL_+"?_="+Date.now()); if(!r.ok) throw new Error("http"); return top10(await r.json());
+}
+async function submitScore(entry){
+  if(!URL_){ try{localStorage.setItem(KEY,JSON.stringify(top10(localBoard().concat(entry))));}catch(e){} return; }
+  await fetch(URL_,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(entry)});
+}
+async function renderBoard(id,hl,mine){
+  const el=$(id); el.innerHTML="<div class='lbempty'>Loading…</div>";
+  let b; try{ b=await getBoard(); }catch(e){ el.innerHTML="<div class='lbempty'>Leaderboard offline — try again later.</div>"; return; }
+  const isMe=r=>hl&&r.t===hl;
+  let html=b.length?"<table class='lb'><tr><th>#</th><th>Name</th><th>Score</th><th style='text-align:right'>%</th></tr>"+
+    b.map((r,k)=>"<tr"+(isMe(r)?" class='me'":"")+"><td>"+(k+1)+"</td><td>"+esc(r.name)+"</td><td>"+fmt(r.score)+"/"+MAX+"</td><td class='pc'>"+r.pct+"%</td></tr>").join("")+"</table>"
     :"<div class='lbempty'>Nobody yet — be the first!</div>";
+  if(mine){ html+= b.some(isMe)?"<div class='small'>🎉 You’re on the board!</div>":"<div class='small'>Your run: "+fmt(mine.score)+"/"+MAX+" — not in the top 10 this time.</div>"; }
+  el.innerHTML=html;
 }
 function nameOk(){ return $("name").value.trim().length>0; }
 const GO=document.querySelectorAll(".go"); const setGo=()=>GO.forEach(b=>b.disabled=!nameOk());
@@ -110,9 +122,9 @@ function done(){
      +"<b>"+Drill.CASES[q.caseIdx]+"</b> · <span style='color:var(--"+q.gender+");font-weight:800'>"+ART[q.gender]+" "+q.noun+"</span> <i>("+esc(q.english)+")</i><br>"
      +"“"+q.det.label+" "+q.english+"” → <b>"+q.answer+" "+q.noun+"</b><br><span class='small'>G "+fmt(l.gp)+" · E "+fmt(l.ep)+" · C "+fmt(l.cp)+"</span>"
      +(l.wrong.length?"<br><i>you typed: "+l.wrong.map(esc).join(", ")+"</i>":"")+"</div>";}).join("");
-  const t=Date.now(), board=loadBoard(); board.push({name:player,score,pct,t}); saveBoard(board.slice(-10));
-  renderBoard("lb1",t);
-  show("s-done");
+  const t=Date.now(), entry={name:player,score,pct,t};
+  show("s-done"); $("lb1").innerHTML="<div class='lbempty'>Saving…</div>";
+  submitScore(entry).catch(()=>{}).then(()=>renderBoard("lb1",t,entry));
 }
 GO.forEach(b=>b.addEventListener("click",()=>{ if(nameOk()) begin(); }));
 $("again").addEventListener("click",()=>{renderBoard("lb0");start();});

@@ -14,3 +14,13 @@ Static learning web apps for German (A1/A2). No build step; plain HTML/JS.
 
 ## Add a module
 Create `modules/<name>/index.html` and add one entry to `modules.js`.
+
+## Shared top-10 leaderboard (Google Sheet)
+Without setup the board only stores scores on one device. To share it across all devices:
+1. sheets.google.com → new blank sheet.
+2. Extensions → Apps Script → delete the sample code → paste `backend/Code.gs` → Save.
+3. Deploy → New deployment → gear icon → **Web app**. Execute as: **Me**. Who has access: **Anyone**. Deploy → authorise (Advanced → continue → Allow).
+4. Copy the Web app URL (ends in `/exec`). Opening it in a browser should show `[]`.
+5. Put it in `config.js`: `window.LEADERBOARD_URL = "https://script.google.com/macros/s/…/exec";` and re-upload `config.js` to GitHub.
+Later changes to `Code.gs` need Deploy → Manage deployments → Edit → New version.
+The URL is in the public site code, so anyone could post a fake score; names on the board are public.
