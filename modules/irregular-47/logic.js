@@ -35,9 +35,9 @@
   // steps for one verb: English (1 pt) + up to 3 forms (3 pts each)
   function steps(v) {
     const st = [{ k: "en", label: "English", base: 1, show: v[1] }];
-    st.push({ k: "pr", label: "er/sie/es — Präsens", base: 3, answers: [v[2]], show: v[2] });
-    if (v[3]) st.push({ k: "pa", label: "er/sie/es — Präteritum", base: 3, answers: [v[3]], show: v[3] });
-    if (v[4]) st.push({ k: "pf", label: "er/sie/es — Perfekt (hat/ist …)", base: 3, answers: v[4], show: v[4].join(" / ") });
+    st.push({ k: "pr", label: "er/sie/es — Präsens (present tense)", base: 3, answers: [v[2]], show: v[2] });
+    if (v[3]) st.push({ k: "pa", label: "er/sie/es — Präteritum (simple past)", base: 3, answers: [v[3]], show: v[3] });
+    if (v[4]) st.push({ k: "pf", label: "er/sie/es — Perfekt (present perfect: hat/ist + Partizip II)", base: 3, answers: v[4], show: v[4].join(" / ") });
     return st;
   }
   const check = (v, step, input) => step.k === "en" ? checkEnglish(input, v) : checkForm(input, step.answers);

@@ -6,8 +6,8 @@ const KEY="irr47Top", URL_=(window.LEADERBOARD_URL||"").trim();
 let player="",sess,vi,steps,si,tries,gaveUp,wrongs,log,cur;
 const show=id=>{["s-intro","s-verb","s-done"].forEach(s=>$(s).classList.toggle("hidden",s!==id));window.scrollTo(0,0);};
 // reference table
-$("vt").innerHTML="<tr><th>#</th><th>Verb</th><th>English</th><th>Präs.</th><th>Prät.</th><th>Perfekt</th></tr>"+V.map((v,k)=>
- "<tr><td>"+(k+1)+"</td><td class='iv'>"+v[0]+"</td><td class='en'>"+esc(v[1])+"</td><td class='p1'>"+v[2]+"</td><td class='p2'>"+(v[3]||"–")+"</td><td class='p3'>"+(v[4]?v[4].join(" / "):"–")+"</td></tr>").join("");
+$("vt").innerHTML="<tr><th>Verb</th><th>English</th><th>Präsens<br><small>present</small></th><th>Präteritum<br><small>simple past</small></th><th>Perfekt<br><small>pres. perfect</small></th></tr>"+V.map((v,k)=>
+ "<tr><td class='iv'>"+v[0]+"</td><td class='en'>"+esc(v[1])+"</td><td class='p1'>"+v[2]+"</td><td class='p2'>"+(v[3]||"–")+"</td><td class='p3'>"+(v[4]?v[4].join(" / "):"–")+"</td></tr>").join("");
 // leaderboard (shared via Apps Script, or local fallback)
 const top10=a=>a.slice().sort((x,y)=>y.pct-x.pct||y.score-x.score||x.t-y.t).slice(0,10);
 function localBoard(){try{return top10(JSON.parse(localStorage.getItem(KEY))||[]);}catch(e){return [];}}
@@ -80,7 +80,7 @@ function finish(){
   $("verdict").textContent=(player?player+": ":"")+(pct===100?"Perfekt! Samurai-Meister! ⚔️🍺":pct>=80?"Sehr gut! Prost! 🍺":pct>=60?"Gut – weiter so! 🥨":pct>=40?"Geht so… noch eine Brezn?":"Oje. Zurück in die Schule! 📚");
   let best=0; try{best=+localStorage.getItem("irr47BestPct")||0; if(pct>best){best=pct;localStorage.setItem("irr47BestPct",best);}}catch(e){}
   $("best").textContent=best?"Best on this device: "+best+"%":"";
-  ["en","pr","pa","pf"].forEach((k,i)=>{ const R=all.filter(r=>r.k===k); $("n"+i).textContent=fmt(R.reduce((a,r)=>a+r.pts,0)); $("m"+i).innerHTML=["English","Präsens","Präteritum","Perfekt"][i]+"<br>/ "+R.reduce((a,r)=>a+r.base,0); });
+  ["en","pr","pa","pf"].forEach((k,i)=>{ const R=all.filter(r=>r.k===k); $("n"+i).textContent=fmt(R.reduce((a,r)=>a+r.pts,0)); $("m"+i).innerHTML=["English","Präsens (present)","Präteritum (simple past)","Perfekt (present perfect)"][i]+"<br>/ "+R.reduce((a,r)=>a+r.base,0); });
   $("review").innerHTML=log.map(v=>{ const p=v._res.reduce((a,r)=>a+r.pts,0), m=Irr.maxFor(v), c=p===m?1:p>=m/2?2:3;
     return "<div class='row r"+c+"'><span class='pts'>"+fmt(p)+"/"+m+"</span><b style='color:#b00020'>"+v[0]+"</b> <i>("+esc(v[1])+")</i><br>"+
      v._res.map(r=>"<span class='small'>"+(r.k==="en"?"EN":r.k==="pr"?"Präs":r.k==="pa"?"Prät":"Perf")+": <b>"+esc(r.show)+"</b> "+(r.pts===r.base?"✔":"+"+fmt(r.pts))+(r.gaveUp?" (gave up)":"")+"</span>").join("<br>")+

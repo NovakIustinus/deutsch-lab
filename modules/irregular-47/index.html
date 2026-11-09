@@ -77,9 +77,9 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
 .done-row small{color:#556;font-weight:600;display:block}
 .step-lab{font-weight:900;color:var(--blue2);text-align:left;margin-top:10px}
 .cl{letter-spacing:.12em;font-family:monospace;font-size:1.3rem}
-.vt{width:100%;border-collapse:collapse;font-size:.82rem;text-align:left}
-.vt th{color:var(--blue2);border-bottom:3px solid var(--blue2);padding:3px 4px}
-.vt td{padding:3px 4px;border-bottom:1px solid #e3e8f2}
+.vt{width:100%;border-collapse:collapse;font-size:.74rem;text-align:left}
+.vt th{color:var(--blue2);border-bottom:3px solid var(--blue2);padding:3px 2px;font-size:.72rem}
+.vt td{padding:3px 2px;border-bottom:1px solid #e3e8f2}
 .vt .p1{color:#1565c0;font-weight:700}.vt .p2{color:#7b1fa2;font-weight:700}.vt .p3{color:#1b8a3a;font-weight:700}.vt .iv{color:#b00020;font-weight:800}.vt .en{color:#556}
 .tw{max-height:420px;overflow:auto;border:2px solid #dde;border-radius:10px;margin:6px 0}
 </style>
@@ -93,12 +93,18 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
   <div class="nm"><label for="name">1 · Dein Name? (your name)</label>
    <input type="text" id="name" maxlength="20" placeholder="type your name to start" autocomplete="off" style="margin-bottom:0"></div>
   <p style="margin:6px 0"><button class="btn primary go" style="font-size:1.2rem" disabled>Los geht’s!</button></p>
-  <div class="sec" style="text-align:center">2 · The list</div>
-  <div class="small"><span class="p1" style="color:#1565c0;font-weight:800">er/sie/es Präsens</span> · <span style="color:#7b1fa2;font-weight:800">Präteritum</span> · <span style="color:#1b8a3a;font-weight:800">Perfekt</span></div>
+  <div class="sec" style="text-align:center">2 · 🏆 Top 10 of all time</div><div id="lb0"></div>
+  <div class="sec" style="text-align:center">3 · What the words mean</div>
+  <div class="note" style="text-align:left;background:#eef4ff;border-color:var(--blue)">
+   <b>Präsens</b> = <b>present tense</b> — what is happening now. <i>er isst</i> = he eats / he is eating.<br>
+   <b>Präteritum</b> = <b>simple past</b> — a past event told in writing or stories. <i>er aß</i> = he ate.<br>
+   <b>Perfekt</b> = <b>present perfect</b> — the usual spoken past: <i>hat</i> or <i>ist</i> + the <b>Partizip II</b> (past participle). <i>er hat gegessen</i> = he ate / he has eaten.<br>
+   <b>er/sie/es</b> = he / she / it, the 3rd person singular. <b>Infinitiv</b> = the base form, <i>essen</i> = to eat.</div>
+  <div class="sec" style="text-align:center">4 · The list</div>
+  <div class="small"><span style="color:#1565c0;font-weight:800">Präsens (present)</span> · <span style="color:#7b1fa2;font-weight:800">Präteritum (simple past)</span> · <span style="color:#1b8a3a;font-weight:800">Perfekt (present perfect)</span></div>
   <div class="tw"><table class="vt" id="vt"></table></div>
   <div class="note" style="text-align:left"><b>Per verb (max 10):</b> type the English meaning (1 pt), then three forms you must type out in full (3 pts each): <i>er/sie/es</i> Präsens, Präteritum, and Perfekt with hat/ist (e.g. <i>hat gegessen</i>). Points: full on the first try, half on the 2nd, a quarter on the 3rd, then 0. A clue appears after 3 wrong guesses; after 5 you can give up and the answer is shown — you still have to type it. ß = ss and ä/ö/ü = ae/oe/ue are accepted.</div>
   <p><button class="btn primary go" style="font-size:1.2rem" disabled>Los geht’s!</button></p>
-  <div class="sec" style="text-align:center">3 · 🏆 Top 10 of all time</div><div id="lb0"></div>
  </div>
 
  <div id="s-verb" class="card hidden">
