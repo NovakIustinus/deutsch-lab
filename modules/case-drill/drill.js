@@ -3,28 +3,28 @@ const $=id=>document.getElementById(id), N=10, ART={m:"der",f:"die",n:"das"};
 const NOTE=["Nominativ = the subject: who/what does the verb.",
  "Akkusativ = the direct object: who/what gets acted on (I see the dog → den Hund). Only masculine changes: der→den, ein→einen.",
  "Dativ = the indirect object: to/for whom (I give the dog a bone → dem Hund). Feminine → der, masc/neut → dem."];
-const PTS=[1,0.5,0.25], MAX=N*3;
+const PTS=[5,3,1], PER=7, MAX=N*PER;
 let gaveUp=false,gaveUpE=false,player="",sess,i,log,gOk,eOk,tries,engTries,wrongTaps,wrongTyped;
 function show(id){["s-intro","s-gender","s-case","s-done"].forEach(s=>$(s).classList.toggle("hidden",s!==id));window.scrollTo(0,0);}
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
 const fmt=n=>String(Number(n.toFixed(2)));
-const KEY="caseDrillTop30", URL_=(window.LEADERBOARD_URL||"").trim();
-const top10=a=>a.slice().sort((x,y)=>y.score-x.score||x.t-y.t).slice(0,10);
+const KEY="caseDrillTop70", URL_=(window.LEADERBOARD_URL||"").trim();
+const top10=a=>a.slice().sort((x,y)=>y.pct-x.pct||y.score-x.score||x.t-y.t).slice(0,10);
 function localBoard(){try{return top10(JSON.parse(localStorage.getItem(KEY))||[]);}catch(e){return [];}}
 async function getBoard(){
   if(!URL_) return localBoard();
-  const r=await fetch(URL_+"?_="+Date.now()); if(!r.ok) throw new Error("http"); return top10(await r.json());
+  const r=await fetch(URL_+"?module=case-drill&_="+Date.now()); if(!r.ok) throw new Error("http"); return top10(await r.json());
 }
 async function submitScore(entry){
   if(!URL_){ try{localStorage.setItem(KEY,JSON.stringify(top10(localBoard().concat(entry))));}catch(e){} return; }
-  await fetch(URL_,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(entry)});
+  await fetch(URL_,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({module:"case-drill"},entry))});
 }
 async function renderBoard(id,hl,mine){
   const el=$(id); el.innerHTML="<div class='lbempty'>Loading…</div>";
   let b; try{ b=await getBoard(); }catch(e){ el.innerHTML="<div class='lbempty'>Leaderboard offline — try again later.</div>"; return; }
   const isMe=r=>hl&&r.t===hl;
   let html=b.length?"<table class='lb'><tr><th>#</th><th>Name</th><th>Score</th><th style='text-align:right'>%</th></tr>"+
-    b.map((r,k)=>"<tr"+(isMe(r)?" class='me'":"")+"><td>"+(k+1)+"</td><td>"+esc(r.name)+"</td><td>"+fmt(r.score)+"/"+MAX+"</td><td class='pc'>"+r.pct+"%</td></tr>").join("")+"</table>"
+    b.map((r,k)=>"<tr"+(isMe(r)?" class='me'":"")+"><td>"+(k+1)+"</td><td>"+esc(r.name)+"</td><td>"+fmt(r.score)+"/"+(r.max||30)+"</td><td class='pc'>"+r.pct+"%</td></tr>").join("")+"</table>"
     :"<div class='lbempty'>Nobody yet — be the first!</div>";
   if(mine){ html+= b.some(isMe)?"<div class='small'>🎉 You’re on the board!</div>":"<div class='small'>Your run: "+fmt(mine.score)+"/"+MAX+" — not in the top 10 this time.</div>"; }
   el.innerHTML=html;
@@ -116,13 +116,13 @@ function done(){
   const cnt=f=>log.filter(f).length;
   $("tryline").textContent="Case answers — 1st try: "+cnt(l=>l.tries===1)+" · 2nd: "+cnt(l=>l.tries===2)+" · 3rd: "+cnt(l=>l.tries===3)+" · 4+: "+cnt(l=>l.tries>3);
   $("cs").innerHTML=Drill.CASES.map((c,k)=>{const L=log.filter(l=>l.q.caseIdx===k);
-    return "<div class='c"+k+"'><b>"+(L.length?fmt(L.reduce((a,l)=>a+l.pts,0))+"/"+L.length*3:"–")+"</b><span>"+c+"</span></div>";}).join("");
-  $("review").innerHTML=log.map(l=>{const q=l.q, r=l.pts===3?1:l.pts>=1.5?2:3;
-    return "<div class='row r"+r+"'><span class='pts'>"+fmt(l.pts)+"/3</span>"
+    return "<div class='c"+k+"'><b>"+(L.length?fmt(L.reduce((a,l)=>a+l.pts,0))+"/"+L.length*PER:"–")+"</b><span>"+c+"</span></div>";}).join("");
+  $("review").innerHTML=log.map(l=>{const q=l.q, r=l.pts===PER?1:l.pts>=PER/2?2:3;
+    return "<div class='row r"+r+"'><span class='pts'>"+fmt(l.pts)+"/"+PER+"</span>"
      +"<b>"+Drill.CASES[q.caseIdx]+"</b> · <span style='color:var(--"+q.gender+");font-weight:800'>"+ART[q.gender]+" "+q.noun+"</span> <i>("+esc(q.english)+")</i><br>"
      +"“"+q.det.label+" "+q.english+"” → <b>"+q.answer+" "+q.noun+"</b><br><span class='small'>G "+fmt(l.gp)+" · E "+fmt(l.ep)+" · C "+fmt(l.cp)+"</span>"
      +(l.wrong.length?"<br><i>you typed: "+l.wrong.map(esc).join(", ")+"</i>":"")+"</div>";}).join("");
-  const t=Date.now(), entry={name:player,score,pct,t};
+  const t=Date.now(), entry={name:player,score,max:MAX,pct,t};
   show("s-done"); $("lb1").innerHTML="<div class='lbempty'>Saving…</div>";
   submitScore(entry).catch(()=>{}).then(()=>renderBoard("lb1",t,entry));
 }

@@ -24,3 +24,8 @@ Without setup the board only stores scores on one device. To share it across all
 5. Put it in `config.js`: `window.LEADERBOARD_URL = "https://script.google.com/macros/s/…/exec";` and re-upload `config.js` to GitHub.
 Later changes to `Code.gs` need Deploy → Manage deployments → Edit → New version.
 The URL is in the public site code, so anyone could post a fake score; names on the board are public.
+
+## Modules
+- `modules/case-drill/` – der/die/das + Nom/Akk/Dat drill
+- `modules/irregular-47/` – "47 Samurai" irregular verbs (English + Präsens/Präteritum/Perfekt typed out)
+Each module has its own leaderboard tab. After changing `backend/Code.gs`: paste it into Apps Script, then Deploy → Manage deployments → pencil → Version: New version → Deploy (the URL stays the same).
