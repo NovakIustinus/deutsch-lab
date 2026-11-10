@@ -85,6 +85,14 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
 .pillrow{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:4px 0 8px}
 .pp{display:inline-block;border-radius:99px;padding:.25em .9em;font-weight:800;color:#fff;font-size:1.15rem}
 .pp.pe{background:var(--blue2)}.pp.t1{background:#7b1fa2}.pp.t2{background:#1b8a3a}
+.mt{width:100%;table-layout:fixed;border-collapse:collapse;font-size:.63rem;text-align:center}
+.mt col.c1{width:17%}
+.mt th{background:#4fc3e8;color:#0b2a40;padding:5px 1px;font-size:.66rem;border:1px solid #fff}
+.mt td{background:#8fdcf2;padding:4px 0;font-weight:700;border:1px solid #fff;color:#0b2a40}
+.mt td.lb2{background:#e6e6e6;text-align:right;padding-right:4px;font-weight:600;font-size:.62rem;color:#333}
+.mt td.pr{font-size:.8rem}
+.mt td.st2{background:#c9eefa;font-weight:600}
+.mt .oe{color:#e07b00}
 </style>
 </head>
 <body><div class="wrap">
@@ -98,7 +106,22 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
   <p style="margin:6px 0"><button class="btn primary go" style="font-size:1.2rem" disabled>Los geht’s!</button></p>
   <div class="sec" style="text-align:center">2 · 🏆 Top 10 of all time</div><div id="lb0"></div>
 
-  <div class="sec" style="text-align:center">3 · How it works</div>
+  <div class="sec" style="text-align:center">3 · Modal verbs in the Präteritum</div>
+  <div class="small">Modals are almost regular in the simple past, but some change their stem vowel (not drilled below — for reference).</div>
+  <div class="tw" style="max-height:none;margin:6px -8px"><table class="mt"><colgroup><col class="c1"><col><col><col><col><col><col></colgroup>
+   <tr><th></th><th>dürfen</th><th>können</th><th>müssen</th><th>sollen</th><th>wollen</th><th>mögen</th></tr>
+   <tr><td class="lb2">stem</td><td class="st2"><i>dürf-</i></td><td class="st2"><i>könn-</i></td><td class="st2"><i>müss-</i></td><td class="st2"><i>soll-</i></td><td class="st2"><i>woll-</i></td><td class="st2"><i>mög-</i></td></tr>
+   <tr><td class="lb2">past stem change</td><td class="st2"><b>ü → u</b></td><td class="st2"><b>ö → o</b></td><td class="st2"><b>ü → u</b></td><td class="st2"><b>–</b></td><td class="st2"><b>–</b></td><td class="st2"><b>ö → o</b></td></tr>
+   <tr><td class="lb2 pr">ich</td><td>durf<b class="oe">te</b></td><td>konn<b class="oe">te</b></td><td>muss<b class="oe">te</b></td><td>soll<b class="oe">te</b></td><td>woll<b class="oe">te</b></td><td>moch<b class="oe">te</b></td></tr>
+   <tr><td class="lb2 pr">du</td><td>durf<b class="oe">test</b></td><td>konn<b class="oe">test</b></td><td>muss<b class="oe">test</b></td><td>soll<b class="oe">test</b></td><td>woll<b class="oe">test</b></td><td>moch<b class="oe">test</b></td></tr>
+   <tr><td class="lb2 pr">er, sie, es</td><td>durf<b class="oe">te</b></td><td>konn<b class="oe">te</b></td><td>muss<b class="oe">te</b></td><td>soll<b class="oe">te</b></td><td>woll<b class="oe">te</b></td><td>moch<b class="oe">te</b></td></tr>
+   <tr><td class="lb2 pr">wir</td><td>durf<b class="oe">ten</b></td><td>konn<b class="oe">ten</b></td><td>muss<b class="oe">ten</b></td><td>soll<b class="oe">ten</b></td><td>woll<b class="oe">ten</b></td><td>moch<b class="oe">ten</b></td></tr>
+   <tr><td class="lb2 pr">ihr</td><td>durf<b class="oe">tet</b></td><td>konn<b class="oe">tet</b></td><td>muss<b class="oe">tet</b></td><td>soll<b class="oe">tet</b></td><td>woll<b class="oe">tet</b></td><td>moch<b class="oe">tet</b></td></tr>
+   <tr><td class="lb2 pr">Sie, sie</td><td>durf<b class="oe">ten</b></td><td>konn<b class="oe">ten</b></td><td>muss<b class="oe">ten</b></td><td>soll<b class="oe">ten</b></td><td>woll<b class="oe">ten</b></td><td>moch<b class="oe">ten</b></td></tr>
+  </table></div>
+  <div class="small">Source: Deutsch Gym</div>
+
+  <div class="sec" style="text-align:center">4 · How it works</div>
   <div class="note" style="text-align:left;background:#eef4ff;border-color:var(--blue)">
    <b>Präteritum</b> = <b>simple past</b>: <i>ich machte</i> = I did / made.<br>
    <b>Perfekt</b> = <b>present perfect</b>, the usual spoken past: <i>ich habe gemacht</i> = I did / have done.</div>
@@ -117,7 +140,7 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
    <b>No ge-</b> for verbs in -ieren and inseparable prefixes (be-, er-, ver-): <i>telefoniert, besucht</i>.</div>
   <div class="note" style="text-align:left"><b>Per question (max 4):</b> a verb + a person (and tense) are shown. First type the English meaning (1 pt on the first try, ½ on the second, then 0). Then type the form: 3 pts first try, 1½ second, ¾ third, then 0. You can include the pronoun (<i>ich habe gemacht</i>) or leave it out. A clue appears after 3 wrong guesses; after 5 you can give up and the answer is shown — you still have to type it. 10 questions per round, tense chosen at random.</div>
   <p><button class="btn primary go" style="font-size:1.2rem" disabled>Los geht’s!</button></p>
-  <div class="sec" style="text-align:center">4 · The verbs</div>
+  <div class="sec" style="text-align:center">5 · The verbs</div>
   <div class="tw"><table class="vt" id="vt"></table></div>
  </div>
 
