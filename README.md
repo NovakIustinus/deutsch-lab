@@ -28,4 +28,5 @@ The URL is in the public site code, so anyone could post a fake score; names on 
 ## Modules
 - `modules/case-drill/` – der/die/das + Nom/Akk/Dat drill
 - `modules/irregular-47/` – "47 Samurai" irregular verbs (English + Präsens/Präteritum/Perfekt typed out)
+- `modules/regular-verbs/` – Präteritum and Perfekt of regular verbs (person + tense prompts)
 Each module has its own leaderboard tab. After changing `backend/Code.gs`: paste it into Apps Script, then Deploy → Manage deployments → pencil → Version: New version → Deploy (the URL stays the same).

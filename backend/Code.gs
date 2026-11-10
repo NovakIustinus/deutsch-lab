@@ -2,7 +2,8 @@
 // One tab per module. To add a module: add a line to MODULES, then Deploy > Manage deployments > Edit > New version.
 const MODULES = {
   'case-drill':  { sheet: 'Scores',             cap: 70, legacy: 30 },   // module 1 (also used when no module is sent); rows saved before max existed were out of 30
-  'irregular47': { sheet: 'Scores_irregular47', cap: 100 }    // module 2
+  'irregular47': { sheet: 'Scores_irregular47', cap: 100 },   // module 2
+  'regular-verbs': { sheet: 'Scores_regular',   cap: 40  }     // module 3
 };
 function mod_(name) { return MODULES[name || 'case-drill']; }
 function sheet_(m) {
