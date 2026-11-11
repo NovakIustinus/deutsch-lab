@@ -2,7 +2,7 @@
 window.RVERBS = [
 ["machen","to do, make","mach","gemacht","h",0],["kaufen","to buy","kauf","gekauft","h",0],["spielen","to play","spiel","gespielt","h",0],
 ["lernen","to learn","lern","gelernt","h",0],["wohnen","to live, reside","wohn","gewohnt","h",0],["kochen","to cook","koch","gekocht","h",0],
-["brauchen","to need","brauch","gebraucht","h",0],["suchen","to look for, search","such","gesucht","h",0],["fragen","to ask","frag","gefragt","h",0],
+["suchen","to look for, search","such","gesucht","h",0],
 ["sagen","to say","sag","gesagt","h",0],["glauben","to believe, think","glaub","geglaubt","h",0],["hören","to hear, listen","hör","gehört","h",0],
 ["lieben","to love","lieb","geliebt","h",0],["leben","to live, be alive","leb","gelebt","h",0],["zeigen","to show","zeig","gezeigt","h",0],
 ["stellen","to put, place (upright)","stell","gestellt","h",0],["legen","to lay, put (down)","leg","gelegt","h",0],["setzen","to put, set, seat","setz","gesetzt","h",0],
