@@ -17,7 +17,7 @@ async function getBoard(){
 }
 async function submitScore(entry){
   if(!URL_){ try{localStorage.setItem(KEY,JSON.stringify(top10(localBoard().concat(entry))));}catch(e){} return; }
-  await fetch(URL_,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({module:"case-drill"},entry))});
+  const r=await fetch(URL_,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({module:"case-drill"},entry))}); let j=null; try{j=await r.json();}catch(x){} if(j&&j.ok===false) throw new Error("rejected");
 }
 async function renderBoard(id,hl,mine){
   const el=$(id); el.innerHTML="<div class='lbempty'>Loading…</div>";
@@ -124,7 +124,7 @@ function done(){
      +(l.wrong.length?"<br><i>you typed: "+l.wrong.map(esc).join(", ")+"</i>":"")+"</div>";}).join("");
   const t=Date.now(), entry={name:player,score,max:MAX,pct,t};
   show("s-done"); $("lb1").innerHTML="<div class='lbempty'>Saving…</div>";
-  submitScore(entry).catch(()=>{}).then(()=>renderBoard("lb1",t,entry));
+  submitScore(entry).then(()=>0,()=>1).then(bad=>renderBoard("lb1",t,entry).then(()=>{ if(bad) $("lb1").insertAdjacentHTML("beforeend","<div class='small bad' style='margin-top:6px'>⚠️ The leaderboard script rejected this score (it probably needs the latest Code.gs deployed as a New version).</div>"); }));
 }
 GO.forEach(b=>b.addEventListener("click",()=>{ if(nameOk()) begin(); }));
 $("again").addEventListener("click",()=>{renderBoard("lb0");start();});

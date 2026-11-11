@@ -15,7 +15,7 @@ async function getBoard(){ if(!URL_) return localBoard();
   const r=await fetch(URL_+"?module="+MODULE+"&_="+Date.now()); if(!r.ok) throw new Error("http"); return top10(await r.json()); }
 async function submitScore(e){
   if(!URL_){ try{localStorage.setItem(KEY,JSON.stringify(top10(localBoard().concat(e))));}catch(x){} return; }
-  await fetch(URL_,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({module:MODULE},e))});
+  const r=await fetch(URL_,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({module:MODULE},e))}); let j=null; try{j=await r.json();}catch(x){} if(j&&j.ok===false) throw new Error("rejected");
 }
 async function renderBoard(id,hl,mine){
   const el=$(id); el.innerHTML="<div class='lbempty'>Loading…</div>"; let b;
@@ -87,7 +87,7 @@ function finish(){
      (v._res.some(r=>r.wrongs.length)?"<br><i class='small'>you typed: "+v._res.flatMap(r=>r.wrongs).map(esc).join(", ")+"</i>":"")+"</div>"; }).join("");
   const t=Date.now(), entry={name:player,score,max,pct,t};
   show("s-done"); $("lb1").innerHTML="<div class='lbempty'>Saving…</div>";
-  submitScore(entry).catch(()=>{}).then(()=>renderBoard("lb1",t,entry));
+  submitScore(entry).then(()=>0,()=>1).then(bad=>renderBoard("lb1",t,entry).then(()=>{ if(bad) $("lb1").insertAdjacentHTML("beforeend","<div class='small bad' style='margin-top:6px'>⚠️ The leaderboard script rejected this score (it probably needs the latest Code.gs deployed as a New version).</div>"); }));
 }
 $("again").addEventListener("click",()=>{renderBoard("lb0");start();});
 renderBoard("lb0"); show("s-intro");
