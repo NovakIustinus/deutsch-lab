@@ -1,1 +1,1 @@
-window.LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbx67lPFZNlcXKBBVmAGXk4zvi4jzPo-8Ac23Ij2zVhvWu-7B-Ccx8TPU6wvMWVKbT1g/exec";
+window.LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycby27W6-NOdxr6b9lbR2F5-ZlzfxifP9uyjxAXPUY1vlkH9am772lTYhQhPF0DdcaFbO/exec";
