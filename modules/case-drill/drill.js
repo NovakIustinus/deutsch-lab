@@ -3,8 +3,9 @@ const $=id=>document.getElementById(id), N=10, ART={m:"der",f:"die",n:"das"};
 const NOTE=["Nominativ = the subject: who/what does the verb.",
  "Akkusativ = the direct object: who/what gets acted on (I see the dog → den Hund). Only masculine changes: der→den, ein→einen.",
  "Dativ = the indirect object: to/for whom (I give the dog a bone → dem Hund). Feminine → der, masc/neut → dem."];
-const PTS=[5,3,1], PER=7, MAX=N*PER;
-let gaveUp=false,gaveUpE=false,player="",sess,i,log,gOk,eOk,tries,engTries,wrongTaps,wrongTyped;
+const PTS=[5,3,1], PPTS=[2,1,0.5], BASE=7;
+let MAX=N*BASE;
+let gaveUp=false,gaveUpE=false,gaveUpP=false,pOk=true,plTries=0,player="",sess,i,log,gOk,eOk,tries,engTries,wrongTaps,wrongTyped;
 function show(id){["s-intro","s-gender","s-case","s-done"].forEach(s=>$(s).classList.toggle("hidden",s!==id));window.scrollTo(0,0);}
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
 const fmt=n=>String(Number(n.toFixed(2)));
@@ -36,12 +37,14 @@ $("name").addEventListener("keydown",e=>{ if(e.key==="Enter"&&nameOk()){e.preven
 try{ $("name").value=localStorage.getItem("caseDrillName")||""; }catch(e){}
 setGo();
 function begin(){ player=$("name").value.trim(); try{localStorage.setItem("caseDrillName",player);}catch(e){} start(); }
-function start(){sess=Drill.makeSession(window.WORDS,N);i=0;log=[];round();}
+function start(){sess=Drill.makeSession(window.WORDS,N);i=0;log=[];sess.forEach(q=>{q.hasPl=!!Drill.plurals(q.noun);q.per=BASE+(q.hasPl?PPTS[0]:0);});MAX=sess.reduce((a,q)=>a+q.per,0);round();}
 function round(){
   const q=sess[i]; wrongTaps=0; gOk=false; eOk=false; engTries=0; gaveUpE=false;
   $("count").textContent=(i+1)+"/"+N; $("bar").style.width=(i/N*100)+"%";
   $("noun1").textContent=q.noun; $("gtip").textContent=""; $("etip").textContent="";
   $("eng").value=""; $("eng").disabled=false; $("engbtn").disabled=false;
+  pOk=!q.hasPl; plTries=0; gaveUpP=false; $("ptip").textContent=""; $("plu").value=""; $("plu").disabled=false; $("plu").classList.toggle("hidden",!q.hasPl);
+  $("gtitle").textContent=q.hasPl?"Gender + English + plural (all needed to continue)":"Gender + English (both needed to continue)";
   document.querySelectorAll(".g").forEach(b=>{b.disabled=false;b.classList.remove("done","dim");});
   show("s-gender");
 }
@@ -54,15 +57,27 @@ document.querySelectorAll(".g").forEach(b=>b.addEventListener("click",()=>{
 }));
 function checkEng(){
   const q=sess[i]; if(eOk)return; const v=$("eng").value; if(!v.trim())return;
-  if(Drill.checkEnglish(v,q.noun,q.english)){ eOk=true; $("eng").disabled=true; $("engbtn").disabled=true; $("etip").textContent="✔ "+q.english; maybeGo(); }
+  if(Drill.checkEnglish(v,q.noun,q.english)){ eOk=true; $("eng").disabled=true; $("engbtn").disabled=pOk; $("etip").textContent="✔ "+q.english; maybeGo(); }
   else{ engTries++; const e=$("eng"); e.classList.remove("shake"); void e.offsetWidth; e.classList.add("shake");
     if(gaveUpE) $("etip").innerHTML="Not quite — answer: <b>"+esc(q.english)+"</b>, type it in";
     else if(engTries>=5) $("etip").innerHTML="Not quite. <button class='btn' type='button' id='giveupE' style='padding:.3em .8em;font-size:.85rem'>Give up – show me</button>";
     else $("etip").textContent="Not quite – try again"+(engTries>=2?" (starts with “"+Drill.englishAnswers(q.noun,q.english)[0].slice(0,engTries>=4?3:1)+"…”)":""); }
 }
-$("engbtn").addEventListener("click",checkEng);
+$("engbtn").addEventListener("click",()=>{ if(eOk||document.activeElement===$("plu")) checkPlu(); else checkEng(); });
 $("eng").addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();checkEng();} });
-function maybeGo(){ if(gOk&&eOk) setTimeout(toCase,700); else if(gOk) $("eng").focus(); }
+function checkPlu(){
+  const q=sess[i]; if(pOk) return; const v=$("plu").value; if(!v.trim()) return;
+  if(Drill.checkPlural(v,q.noun)){ pOk=true; $("plu").disabled=true; $("ptip").textContent="✔ die "+Drill.plurals(q.noun)[0]+(Drill.plurals(q.noun).length>1?" (also: "+Drill.plurals(q.noun).slice(1).join(", ")+")":""); maybeGo(); return; }
+  plTries++; const e=$("plu"); e.classList.remove("shake"); void e.offsetWidth; e.classList.add("shake"); const ans=Drill.plurals(q.noun)[0];
+  if(gaveUpP) $("ptip").innerHTML="Not quite — answer: <b>die "+esc(ans)+"</b>, type it in";
+  else if(plTries>=5) $("ptip").innerHTML="Not quite. <button class='btn' type='button' id='giveupP' style='padding:.3em .8em;font-size:.85rem'>Give up – show me</button>";
+  else if(plTries>=3) $("ptip").innerHTML="Not quite. Clue: <b>die "+esc(ans[0]+"_".repeat(ans.length-1))+"</b> <span class='small'>("+esc(Drill.pluralHint(q.noun))+")</span>";
+  else if(plTries>=2) $("ptip").innerHTML="Not quite – hint: "+esc(Drill.pluralHint(q.noun));
+  else $("ptip").textContent="Not quite – try again";
+}
+$("plu").addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();checkPlu();} });
+$("ptip").addEventListener("click",e=>{ if(e.target.id==="giveupP"){ gaveUpP=true; const q=sess[i]; $("ptip").innerHTML="Answer: <b>die "+esc(Drill.plurals(q.noun)[0])+"</b> — type it in to continue"; $("plu").value=""; $("plu").focus(); } });
+function maybeGo(){ if(gOk&&eOk&&pOk) setTimeout(toCase,700); else if(gOk&&!eOk) $("eng").focus(); else if(gOk&&eOk&&!pOk) $("plu").focus(); }
 function toCase(){
   tries=0; wrongTyped=[]; gaveUp=false;
   const q=sess[i], gp=$("gpill"); gp.textContent=ART[q.gender]+" "+q.noun; gp.style.background="var(--"+q.gender+")";
@@ -90,10 +105,10 @@ $("form").addEventListener("submit",e=>{
     $("resline").innerHTML=msg; $("result").classList.remove("hidden"); $("next").classList.add("hidden");
     inp.select(); return;
   }
-  const cp=PTS[tries-1]||0, gp=wrongTaps===0?1:0, ep=engTries===0?1:0, pts=gp+ep+cp;
-  log.push({q,tries,cp,gp,ep,pts,wrong:wrongTyped.slice()});
+  const cp=PTS[tries-1]||0, gp=wrongTaps===0?1:0, ep=engTries===0?1:0, pp=!q.hasPl||gaveUpP?0:(PPTS[plTries]||0), pts=gp+ep+cp+pp;
+  log.push({q,tries,cp,gp,ep,pp,plTries,pts,wrong:wrongTyped.slice()});
   $("ans").disabled=true; $("check").classList.add("hidden");
-  $("resline").innerHTML="<span class='ok'>Richtig! ✔ "+q.answer+" "+q.noun+"</span><br><span class='small'>"+"Gender +"+fmt(gp)+" · English +"+fmt(ep)+" · Case +"+fmt(cp)+" = <b>"+fmt(pts)+"</b> / 3"+"</span>";
+  $("resline").innerHTML="<span class='ok'>Richtig! ✔ "+q.answer+" "+q.noun+"</span><br><span class='small'>"+"Gender +"+fmt(gp)+" · English +"+fmt(ep)+(q.hasPl?" · Plural +"+fmt(pp):"")+" · Case +"+fmt(cp)+" = <b>"+fmt(pts)+"</b> / "+q.per+"</span>";
   $("next").classList.remove("hidden"); $("next").textContent=i===N-1?"Ergebnis →":"Weiter →";
   $("result").classList.remove("hidden"); $("next").focus();
 });
@@ -112,15 +127,15 @@ function done(){
   let best=0; try{best=+localStorage.getItem("caseDrillBestPct")||0; if(pct>best){best=pct;localStorage.setItem("caseDrillBestPct",best);}}catch(e){}
   $("best").textContent=best?"Best on this device: "+best+"%":"";
   const sum=k=>fmt(log.reduce((a,l)=>a+l[k],0));
-  $("n1").textContent=sum("gp"); $("n2").textContent=sum("ep"); $("n3").textContent=sum("cp");
+  $("n1").textContent=sum("gp"); $("n2").textContent=sum("ep"); $("n3").textContent=sum("cp"); $("n4").textContent=sum("pp"); $("m4").innerHTML="Plural<br>/ "+log.filter(l=>l.q.hasPl).length*PPTS[0];
   const cnt=f=>log.filter(f).length;
   $("tryline").textContent="Case answers — 1st try: "+cnt(l=>l.tries===1)+" · 2nd: "+cnt(l=>l.tries===2)+" · 3rd: "+cnt(l=>l.tries===3)+" · 4+: "+cnt(l=>l.tries>3);
   $("cs").innerHTML=Drill.CASES.map((c,k)=>{const L=log.filter(l=>l.q.caseIdx===k);
-    return "<div class='c"+k+"'><b>"+(L.length?fmt(L.reduce((a,l)=>a+l.pts,0))+"/"+L.length*PER:"–")+"</b><span>"+c+"</span></div>";}).join("");
-  $("review").innerHTML=log.map(l=>{const q=l.q, r=l.pts===PER?1:l.pts>=PER/2?2:3;
+    return "<div class='c"+k+"'><b>"+(L.length?fmt(L.reduce((a,l)=>a+l.pts,0))+"/"+L.reduce((a,l)=>a+l.q.per,0):"–")+"</b><span>"+c+"</span></div>";}).join("");
+  $("review").innerHTML=log.map(l=>{const q=l.q, PER=q.per, r=l.pts===PER?1:l.pts>=PER/2?2:3;
     return "<div class='row r"+r+"'><span class='pts'>"+fmt(l.pts)+"/"+PER+"</span>"
      +"<b>"+Drill.CASES[q.caseIdx]+"</b> · <span style='color:var(--"+q.gender+");font-weight:800'>"+ART[q.gender]+" "+q.noun+"</span> <i>("+esc(q.english)+")</i><br>"
-     +"“"+q.det.label+" "+q.english+"” → <b>"+q.answer+" "+q.noun+"</b><br><span class='small'>G "+fmt(l.gp)+" · E "+fmt(l.ep)+" · C "+fmt(l.cp)+"</span>"
+     +"“"+q.det.label+" "+q.english+"” → <b>"+q.answer+" "+q.noun+"</b><br><span class='small'>G "+fmt(l.gp)+" · E "+fmt(l.ep)+(q.hasPl?" · P "+fmt(l.pp)+" (die "+Drill.plurals(q.noun)[0]+")":"")+" · C "+fmt(l.cp)+"</span>"
      +(l.wrong.length?"<br><i>you typed: "+l.wrong.map(esc).join(", ")+"</i>":"")+"</div>";}).join("");
   const t=Date.now(), entry={name:player,score,max:MAX,pct,t};
   show("s-done"); $("lb1").innerHTML="<div class='lbempty'>Saving…</div>";

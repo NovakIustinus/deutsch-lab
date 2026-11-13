@@ -56,6 +56,22 @@
     if (!s) return false;
     return englishAnswers(noun, english).some(a => a === s || (a.length >= 6 && lev(a, s) <= 1));
   }
+  // ---- plurals ----
+  const PL = typeof module !== "undefined" ? require("./plurals.js") : root.PLURALS;
+  const plurals = noun => PL[noun] || null;
+  const normPl = s => String(s).toLowerCase().replace(/ß/g, "ss").replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue");
+  function checkPlural(input, noun) {
+    const p = plurals(noun); if (!p) return false;
+    const s = normPl(String(input).trim().replace(/\s+/g, " ")).replace(/^die /, "");
+    return p.some(x => normPl(x) === s);
+  }
+  const deUml = s => s.replace(/ä/g, "a").replace(/ö/g, "o").replace(/ü/g, "u").replace(/Ä/g, "A").replace(/Ö/g, "O").replace(/Ü/g, "U");
+  function pluralHint(noun) {
+    const p = plurals(noun); if (!p) return ""; const pl = p[0], base = deUml(pl), um = pl !== base;
+    if (base === noun) return um ? "just an umlaut, no ending" : "same as the singular";
+    if (base.startsWith(noun)) return "add -" + base.slice(noun.length) + (um ? " and an umlaut" : "");
+    return "a slightly irregular plural";
+  }
   function shuffle(a, rnd) {
     a = a.slice();
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
@@ -69,6 +85,6 @@
       return { noun: w[0], gender: w[1], english: w[2], det, caseIdx, answer: form(det, w[1], caseIdx) };
     });
   }
-  const api = { CASES, GENDERS, DETS, form, check, checkEnglish, englishAnswers, makeSession };
+  const api = { plurals, checkPlural, pluralHint, CASES, GENDERS, DETS, form, check, checkEnglish, englishAnswers, makeSession };
   if (typeof module !== "undefined") module.exports = api; else root.Drill = api;
 })(this);

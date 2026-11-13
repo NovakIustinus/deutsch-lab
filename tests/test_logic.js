@@ -45,3 +45,9 @@ for (let i = 0; i < 500; i++) {
 const seen = new Set(); for (let i = 0; i < 300; i++) D.makeSession(W, 10).forEach(q => seen.add(q.det.id + q.caseIdx));
 assert.strictEqual(seen.size, 30);
 console.log("all tests passed");
+// plurals
+{ const D=require("../modules/case-drill/logic.js"); let f=0; const ok=(c,m)=>{if(!c){f++;console.log("FAIL",m);}};
+  ok(D.checkPlural("die Äpfel","Apfel")&&D.checkPlural("aepfel","Apfel")&&!D.checkPlural("Apfel","Apfel"),"apfel");
+  ok(D.checkPlural("Balkone","Balkon")&&D.checkPlural("Balkons","Balkon")&&D.checkPlural("Wörter","Wort")&&D.checkPlural("worte","Wort"),"alts");
+  ok(D.checkPlural("Kontos","Konto")&&D.checkPlural("Konten","Konto"),"konto"); ok(D.plurals("Hunger")===null&&!D.checkPlural("x","Hunger"),"none");
+  console.log(f?f+" plural failures":"plural tests passed"); if(f) process.exit(1); }
