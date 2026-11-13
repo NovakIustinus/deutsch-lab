@@ -14,12 +14,21 @@ ok(C.points(1,false)===4&&C.points(2,false)===2&&C.points(3,false)===1&&C.points
 let seed=1; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
 for(let i=0;i<500;i++){ const s=C.makeSession(rnd); ok(s.length===10,"len");
  s.forEach(q=>{ ok(q.prompt&&q.show,"q "+q.type);
-  if(q.kind==="mc"){ ok(q.options.length===4&&new Set(q.options).size===4&&q.options[q.correct]===q.show,"mc "+JSON.stringify(q)); ok(/[A-ZÄ]/.test(q.de[0]),"cap"); }
-  else { ok(C.check(q,q.show),"self "+q.type+" "+q.show);
-    if(q.mode==="price"){ ok(q.cents>0&&q.cents%10===0,"cents "+q.cents); } } });
- const by=t=>s.filter(q=>q.type===t).length; ok(by("order")===2&&by("ask")===2&&by("vocab")===2,"mix");
- ok(new Set(s.filter(q=>q.type==="vocab").map(q=>q.de)).size===2,"dupe vocab");
+  if(q.kind==="mc"){ ok(q.options.length>=3&&new Set(q.options).size===q.options.length&&q.options[q.correct]===q.show,"mc "+JSON.stringify(q)); }
+  else if(q.kind==="tiles"){ const ans=C.tokens(q.show); const pool=q.tiles.map(x=>x.toLowerCase()); let okAll=true;
+    ans.forEach(w=>{ const k=pool.indexOf(w.toLowerCase()); if(k<0) okAll=false; else pool.splice(k,1); }); ok(okAll,"tiles contain answer "+q.show+" / "+q.tiles);
+    ok(q.tiles.length>=ans.length+3,"distractors "+q.type); ok(C.check(q,C.tokens(q.show).join(" ")),"tiles self "+q.type+" "+q.show);
+    const lower=q.tiles.filter(w=>/^[A-ZÄÖÜ]/.test(w)); }
+  else { ok(q.kind==="text"&&C.check(q,q.show),"text "+q.type); }
+  if(q.mode==="price") ok(q.cents>0&&q.cents%10===0,"cents "+q.cents); });
+ const by=t=>s.filter(q=>q.type===t).length; ok(by("order")===1&&by("orderbuild")===1&&by("ask")===2&&by("vocab")===1&&by("article")===1&&by("hear")===1&&s.filter(q=>q.write).length===1,"mix");
 }
+// diagnose
+{ const v=["Ich empfehle den Cappuccino.","Ich kann den Cappuccino empfehlen."];
+  let d=C.diagnose("Ich empfehle der Cappuccino",v); ok(d.ops.map(o=>o.s).join()==="ok,ok,sub,ok","diag1 "+JSON.stringify(d)); ok(d.ops[2].w==="den"&&d.ops[2].typed==="der","sub word");
+  d=C.diagnose("Ich empfehle Cappuccino",v); ok(d.ops.map(o=>o.s).join()==="ok,ok,miss,ok","diag2 "+JSON.stringify(d));
+  d=C.diagnose("Ich empfehle den guten Cappuccino",v); ok(d.extra.join()==="guten"&&d.ops.every(o=>o.s==="ok"),"diag3 "+JSON.stringify(d));
+  d=C.diagnose("Ich kann den Cappuccino empfehlen",v); ok(d.ops.every(o=>o.s==="ok")&&d.ops.length===5,"diag4"); }
 // change math
 for(let i=0;i<200;i++){ const q=C.priceQuestion("change",rnd); const m=q.prompt.match(/order is ([\d,]+) €/); const t=Math.round(parseFloat(m[1].replace(",","."))*100); const pay=q.de.match(/sind (\S+) Euro/)[1]; const P={fünf:500,zehn:1000,zwanzig:2000,fünfzig:5000}[pay]; ok(P&&P-t===q.cents&&q.cents>0,"change "+q.prompt+q.de); }
 // sample lines

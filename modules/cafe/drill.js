@@ -44,48 +44,83 @@ function begin(){ player=$("name").value.trim(); store("caseDrillName",player); 
 GO.forEach(b=>b.addEventListener("click",()=>{ if(nameOk()) begin(); }));
 function start(){ sess=Cafe.makeSession(); qi=0; log=[]; question(); }
 // ---- question ----
+let built=[], fix=null;
 function setBubble(reveal){ const t=$("btx"); const hide=listenOn()&&!reveal&&!peeked; t.textContent=hide?"🎧 ••• listen •••":cur.de; t.classList.toggle("hid",hide); $("peek").classList.toggle("hidden",!hide); }
 function question(){
-  cur=sess[qi]; tries=0; gaveUp=false; wrongs=[]; peeked=false;
+  cur=sess[qi]; tries=0; gaveUp=false; wrongs=[]; peeked=false; built=[]; fix=null;
   $("count").textContent=(qi+1)+"/"+N; $("bar").style.width=(qi/N*100)+"%"; $("vn").textContent=(qi+1)+" of "+N; $("chip").textContent=cur.label;
   $("doneRows").innerHTML=""; $("next").classList.add("hidden"); $("fb").innerHTML="";
   const hasDe=!!cur.de; $("bub").classList.toggle("hidden",!hasDe);
   if(hasDe){ $("who").textContent=cur.who||"Customer"; $("play").classList.toggle("hidden",!SYN||!cur.speak); setBubble(false); }
   $("prompt").textContent=cur.prompt;
-  const mc=cur.kind==="mc"; $("opts").classList.toggle("hidden",!mc); $("active").classList.toggle("hidden",mc);
-  if(mc){ $("opts").innerHTML=cur.options.map((o,i)=>"<button class='btn opt' data-i='"+i+"'>"+esc(o)+"</button>").join(""); }
-  else{ $("ans").value=""; $("ans").disabled=false; $("ans").placeholder=cur.mode==="digits"?"e.g. 4,90":cur.mode==="english"?"type the English":cur.mode==="article"?"einen / eine / ein":"type it in German"; }
-  show("s-q"); if(!mc) $("ans").focus();
+  const k=cur.kind; $("opts").classList.toggle("hidden",k!=="mc"); $("tilesBox").classList.toggle("hidden",k!=="tiles"); $("active").classList.toggle("hidden",k!=="text");
+  $("fixer").classList.add("hidden"); $("ans").classList.remove("hidden");
+  if(k==="mc") $("opts").innerHTML=cur.options.map((o,i)=>"<button class='btn opt' data-i='"+i+"'>"+esc(o)+"</button>").join("");
+  else if(k==="tiles") renderTiles();
+  else { $("ans").value=""; $("ans").disabled=false; $("ans").placeholder="write it in German"; }
+  show("s-q"); if(k==="text") $("ans").focus();
   if(cur.de&&cur.speak&&audioOn()) setTimeout(()=>speak(cur.de),150);
 }
+function renderTiles(){
+  $("built").innerHTML=built.map((i,k)=>"<button type='button' class='tile' data-b='"+k+"'>"+esc(cur.tiles[i])+"</button>").join("");
+  $("bank").innerHTML=cur.tiles.map((w,i)=>"<button type='button' class='tile"+(built.includes(i)?" used":"")+"' data-t='"+i+"'>"+esc(w)+"</button>").join("");
+  $("tcheck").disabled=!built.length;
+}
+$("bank").addEventListener("click",e=>{ const b=e.target.closest("[data-t]"); if(!b) return; const i=+b.dataset.t; if(!built.includes(i)){ built.push(i); renderTiles(); } });
+$("built").addEventListener("click",e=>{ const b=e.target.closest("[data-b]"); if(!b) return; built.splice(+b.dataset.b,1); renderTiles(); });
 $("play").addEventListener("click",()=>speak(cur.de));
 $("peek").addEventListener("click",()=>{ peeked=true; setBubble(false); });
 function finishQ(pts){
   cur.pts=pts; cur.tries=tries; cur.gaveUp=gaveUp; cur.wrongs=wrongs.slice(); log.push(cur);
   if(cur.de) setBubble(true);
-  $("active").classList.add("hidden");
-  $("doneRows").innerHTML="<div class='done-row'><div><small>Answer</small>"+esc(cur.show)+"</div><div>+"+fmt(pts)+"<small>/ "+MAXQ+"</small></div></div>"+(cur.type==="order"&&cur.de?"":"");
+  $("active").classList.add("hidden"); $("tilesBox").classList.add("hidden"); $("fb").innerHTML="";
+  $("doneRows").innerHTML="<div class='done-row'><div><small>Answer</small>"+esc(cur.show)+"</div><div>+"+fmt(pts)+"<small>/ "+MAXQ+"</small></div></div>";
+  if(audioOn()&&cur.kind!=="mc"&&cur.type!=="reply") setTimeout(()=>speak(cur.show),200);
   $("next").classList.remove("hidden"); $("next").textContent=qi===N-1?"Ergebnis →":"Weiter →"; $("next").focus();
 }
 $("opts").addEventListener("click",e=>{ const b=e.target.closest(".opt"); if(!b||b.disabled) return;
   tries++; const i=+b.dataset.i;
-  if(i===cur.correct){ b.classList.add("good"); wrongs.length&&0; $("opts").querySelectorAll(".opt").forEach(x=>x.disabled=true); finishQ(Cafe.points(tries,false)); return; }
+  if(i===cur.correct){ b.classList.add("good"); $("opts").querySelectorAll(".opt").forEach(x=>x.disabled=true); finishQ(Cafe.points(tries,false)); return; }
   wrongs.push(cur.options[i]); b.classList.add("x"); b.disabled=true;
-  if(tries>=3){ gaveUp=true; const g=$("opts").querySelectorAll(".opt")[cur.correct]; g.classList.add("good"); $("opts").querySelectorAll(".opt").forEach(x=>x.disabled=true); finishQ(0); }
+  if(tries>=3){ gaveUp=true; $("opts").querySelectorAll(".opt")[cur.correct].classList.add("good"); $("opts").querySelectorAll(".opt").forEach(x=>x.disabled=true); finishQ(0); }
 });
+// shared wrong/right handling for tiles + written answers
+function attempt(text, shakeEl){
+  tries++;
+  if(Cafe.check(cur,text)){ finishQ(Cafe.points(tries,gaveUp)); return true; }
+  wrongs.push(text.trim());
+  shakeEl.classList.remove("shake"); void shakeEl.offsetWidth; shakeEl.classList.add("shake");
+  let m="<span class='bad'>Nicht ganz ✘ – try again</span>";
+  if(gaveUp) m+="<br>Answer: <b class='ok'>"+esc(cur.show)+"</b> <span class='small'>— "+(cur.kind==="tiles"?"build it":"type it")+" to continue</span>";
+  else if(tries>=5) m+="<br><button class='btn' type='button' id='giveup'>Give up – show me the answer</button>";
+  else if(tries>=3) m+="<br><span class='small'>Clue:</span> <span class='cl'>"+esc(Cafe.clue(cur.show))+"</span>";
+  $("fb").innerHTML=m; return false;
+}
+$("tcheck").addEventListener("click",()=>{ if(!built.length) return; const text=built.map(i=>cur.tiles[i]).join(" ");
+  if(!attempt(text,$("built"))){ built=[]; renderTiles(); } });
+// written answer with per-word marking
+function showFixer(d){
+  fix=d; const el=$("fixer");
+  el.innerHTML=d.ops.map((o,i)=>o.s==="ok"?"<span class='w okw' data-k='"+i+"'>"+esc(o.w)+"</span>":"<input class='w "+(o.s==="sub"?"sub":"miss")+"' data-k='"+i+"' value='"+esc(o.s==="sub"?o.typed:"")+"' size='"+Math.max(4,o.w.length)+"' placeholder='…' autocapitalize='off' autocorrect='off' spellcheck='false'>").join("");
+  el.classList.remove("hidden"); $("ans").classList.add("hidden");
+  const f=el.querySelector("input"); if(f){ f.focus(); f.select(); }
+  let note=""; if(d.extra.length) note="<div class='small'>Extra word"+(d.extra.length>1?"s":"")+" removed: <b>"+d.extra.map(esc).join(", ")+"</b></div>";
+  const nb=d.ops.filter(o=>o.s!=="ok").length; el.insertAdjacentHTML("beforeend","<div style='width:100%' class='small'>🟢 correct · "+nb+" word"+(nb>1?"s":"")+" to fix"+"</div>"+note);
+}
 $("form").addEventListener("submit",e=>{
-  e.preventDefault(); const v=$("ans").value; if(!v.trim()) return; tries++;
-  if(!Cafe.check(cur,v)){
-    wrongs.push(v.trim()); const inp=$("ans"); inp.classList.remove("shake"); void inp.offsetWidth; inp.classList.add("shake");
-    let m="<span class='bad'>Nicht ganz ✘ – try again</span>";
-    if(gaveUp) m+="<br>Answer: <b class='ok'>"+esc(cur.show)+"</b> <span class='small'>— type it in to continue</span>";
-    else if(tries>=5) m+="<br><button class='btn' type='button' id='giveup'>Give up – show me the answer</button>";
-    else if(tries>=3) m+="<br><span class='small'>Clue:</span> <span class='cl'>"+esc(Cafe.clue(cur.show))+"</span>";
-    $("fb").innerHTML=m; inp.select(); return; }
-  finishQ(Cafe.points(tries,gaveUp));
+  e.preventDefault(); let text;
+  if(fix){ text=fix.ops.map((o,i)=>{ if(o.s==="ok") return o.w; const inp=$("fixer").querySelector("[data-k='"+i+"']"); return inp.value.trim(); }).filter(Boolean).join(" "); }
+  else text=$("ans").value;
+  if(!text.trim()) return;
+  if(!attempt(text, fix?$("fixer"):$("ans"))){
+    if(gaveUp){ fix=null; $("fixer").classList.add("hidden"); $("ans").classList.remove("hidden"); $("ans").value=""; $("ans").focus(); return; }
+    const d=Cafe.diagnose(text,cur.answers);
+    if(d.okCount>0&&d.ops.length) showFixer(d); else { fix=null; $("fixer").classList.add("hidden"); $("ans").classList.remove("hidden"); $("ans").select(); }
+  }
 });
 $("fb").addEventListener("click",e=>{ if(e.target.id==="giveup"){ gaveUp=true;
-  $("fb").innerHTML="<span class='bad'>Aufgegeben</span><br>Answer: <b class='ok'>"+esc(cur.show)+"</b> <span class='small'>— type it in to continue (no points)</span>"; $("ans").value=""; $("ans").focus(); } });
+  $("fb").innerHTML="<span class='bad'>Aufgegeben</span><br>Answer: <b class='ok'>"+esc(cur.show)+"</b> <span class='small'>— "+(cur.kind==="tiles"?"build it":"type it")+" to continue (no points)</span>";
+  if(cur.kind==="tiles"){ built=[]; renderTiles(); } else { fix=null; $("fixer").classList.add("hidden"); $("ans").classList.remove("hidden"); $("ans").value=""; $("ans").focus(); } } });
 $("next").addEventListener("click",()=>{ qi++; qi<N?question():finish(); });
 function finish(){
   $("bar").style.width="100%"; $("count").textContent=N+"/"+N;
@@ -102,5 +137,6 @@ function finish(){
   submitScore(entry).then(()=>0,()=>1).then(bad=>renderBoard("lb1",t,entry).then(()=>{ if(bad) $("lb1").insertAdjacentHTML("beforeend","<div class='small bad' style='margin-top:6px'>⚠️ The leaderboard script rejected this score (it probably needs the latest Code.gs deployed as a New version).</div>"); }));
 }
 $("again").addEventListener("click",()=>{renderBoard("lb0");start();});
+window.__cur=()=>cur; // test hook
 renderBoard("lb0"); show("s-intro");
 })();

@@ -111,6 +111,15 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
 .mn td,.mn th{font-size:.82rem;text-align:left;padding:3px 4px;border-bottom:1px solid #e3e8f2}.mn th{color:var(--blue2);border-bottom:3px solid var(--blue2)}
 .mn td:last-child{text-align:right;font-weight:800;white-space:nowrap}
 .pb td{font-size:.85rem;text-align:left;padding:4px;border-bottom:1px solid #e3e8f2}.pb td:first-child{color:#556;width:42%}.pb td:last-child{font-weight:800;color:var(--blue2)}
+.built{min-height:62px;border-top:3px solid #dde;border-bottom:3px solid #dde;margin:10px 0;padding:6px 0;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-content:flex-start}
+.bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+.tile{font:inherit;font-weight:800;font-size:1.1rem;padding:.45em .8em;border:3px solid var(--blue2);border-radius:12px;background:#fff;color:var(--blue2);box-shadow:0 4px 0 var(--blue2);cursor:pointer}
+.tile.used{visibility:hidden}.built .tile{background:#eef4ff}
+.fixer{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0}
+.fixer .w{font:inherit;font-weight:800;font-size:1.1rem;padding:.4em .6em;border-radius:10px;border:3px solid}
+.fixer .okw{background:#e3f4e6;border-color:var(--green);color:#1b5e20}
+.fixer input.w{width:auto;margin:0;min-width:4ch;text-align:center}
+.fixer input.sub{border-color:var(--red);background:#fdeaea}.fixer input.miss{border:3px dashed var(--red);background:#fff}
 </style>
 </head>
 <body><div class="wrap">
@@ -140,7 +149,7 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
   <div class="sec" style="text-align:center">5 · How it works</div>
   <div class="note" style="text-align:left;background:#eef4ff;border-color:var(--blue)">
    <b>Ordering = Akkusativ.</b> <i>Ich hätte gern <b>einen</b> Cappuccino</i> (der) · <i>Ich hätte gern <b>eine</b> heiße Schokolade</i> (die) · <i>Ich hätte gern <b>ein</b> Omelette</i> (das). Only <b>der → einen</b> changes.</div>
-  <div class="note" style="text-align:left"><b>10 questions, 4 points each (40 total):</b> two “what does the customer want?” (tap), two “you ask” (type the German), one “you answer”, two price questions (words ↔ figures, change), one Akkusativ gap, two menu words. Typed answers: 4 pts first try, 2 second, 1 third, then 0. A clue appears after 3 wrong tries; after 5 you can give up and the answer is shown — you still type it. Tap questions: 4 / 2 / 1. Capitals and punctuation don’t matter; ä/ö/ü/ß can be typed ae/oe/ue/ss.</div>
+  <div class="note" style="text-align:left"><b>10 questions, 4 points each (40 total), mostly tapping:</b> pick the English for a customer’s order · <b>tap the words</b> in order to build what you say (two “you ask”, one “you answer”, one order, one price) · hear a price and pick it · pick einen/eine/ein · pick a menu word’s meaning · plus <b>one written answer</b>. First try 4 pts, second 2, third 1. In the written answer, words you got right turn green and stay put — you only fix the red/missing ones. A clue appears after 3 wrong tries; after 5 you can give up and the answer is shown. Capitals and punctuation don’t matter; ä/ö/ü/ß can be typed ae/oe/ue/ss.</div>
   <p><button class="btn primary go" style="font-size:1.2rem" disabled>Los geht’s!</button></p>
  </div>
 
@@ -150,14 +159,17 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
    <button class="btn" id="play" type="button">🔊 Play</button><button class="btn hidden" id="peek" type="button">👁 Show text</button></div>
   <div class="ask" id="prompt"></div>
   <div id="opts" class="hidden"></div>
+  <div id="tilesBox" class="hidden"><div id="built" class="built"></div><div id="bank" class="bank"></div>
+   <button class="btn primary" id="tcheck" type="button">Prüfen</button></div>
   <div id="doneRows"></div>
-  <div id="active">
+  <div id="active" class="hidden">
    <form id="form" autocomplete="off">
     <input type="text" id="ans" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <div id="fixer" class="fixer hidden"></div>
     <button class="btn primary" id="check" type="submit">Prüfen</button>
    </form>
-   <div id="fb" class="res"></div>
   </div>
+  <div id="fb" class="res"></div>
   <button class="btn primary hidden" id="next">Weiter →</button>
  </div>
 

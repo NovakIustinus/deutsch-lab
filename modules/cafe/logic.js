@@ -100,43 +100,98 @@
     return { type: "order", label: "Customer order", kind: "mc", de: orderDE(o, r), speak: true, prompt: "What does the customer want?", options, correct: options.indexOf(correct), show: correct };
   }
 
+  // ---------- tiles (Duolingo style) ----------
+  const CAP = new Set(["Ich", "Sie", "Ihr", "Ihre", "Ihren", "Ihnen", "Ihrem", "Euro", "Cent", "Hafermilch", "Sojamilch", "Mandelmilch"]);
+  const tokens = text => String(text).replace(/[.,!?;:"„“”()]/g, " ").replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
+  const dispTokens = text => tokens(text).map((w, i) => i === 0 && !CAP.has(w) ? w[0].toLowerCase() + w.slice(1) : w);
+  const POOL = (() => { const out = new Set(); D.ask.concat(D.reply).forEach(p => dispTokens(p.a[0]).forEach(w => out.add(w))); return Array.from(out); })();
+  const NUMW = ["eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn", "zwölf", "zwanzig", "dreißig", "vierzig", "fünfzig", "sechzig", "siebzig", "achtzig", "neunzig", "hundert"];
+  function addTiles(q, words, extras, r) {
+    const have = new Set(words.map(w => w.toLowerCase()));
+    const dis = shuffle(extras.filter(w => !have.has(w.toLowerCase())), r);
+    const out = []; for (const w of dis) { if (!out.some(x => x.toLowerCase() === w.toLowerCase())) out.push(w); if (out.length === 4) break; }
+    q.tiles = shuffle(words.concat(out), r); q.kind = "tiles"; return q;
+  }
+
   // ---------- other question types ----------
-  const askQ = p => ({ type: "ask", label: "You ask", kind: "text", mode: "phrase", de: null, prompt: p.en, answers: p.a, show: p.a[0] });
-  const replyQ = p => ({ type: "reply", label: "You answer", kind: "text", mode: "phrase", de: p.q, speak: true, prompt: p.en, answers: p.a, show: p.a[0], who: "Customer" });
-  const articleQ = p => ({ type: "article", label: "Akkusativ", kind: "text", mode: "article", de: null, prompt: "Fill the gap: “Ich hätte gern ___ " + p[0] + ", bitte.”", answers: [p[1]], show: p[1] });
-  const vocabQ = p => ({ type: "vocab", label: "Menu word", kind: "text", mode: "english", de: p[0], speak: true, prompt: "What does it mean in English?", answers: p[1], show: p[1][0], who: "Menu" });
+  const askQ = (p, r) => addTiles({ type: "ask", label: "You ask", mode: "phrase", de: null, prompt: "Say in German: " + p.en.replace(/^Say: /, ""), answers: p.a, show: p.a[0] }, dispTokens(p.a[0]), POOL, r);
+  const replyQ = (p, r, write) => {
+    const q = { type: "reply", label: write ? "Write your answer" : "You answer", mode: "phrase", de: p.q, speak: true, prompt: p.en, answers: p.a, show: p.a[0], who: "Customer" };
+    if (write) { q.kind = "text"; q.write = true; return q; }
+    return addTiles(q, dispTokens(p.a[0]), POOL, r);
+  };
+  function orderBuildQuestion(r) {
+    const o = makeOrder(r), d = o.drink;
+    const np = d.art + (o.size ? " " + D.sizes[o.size].de : "") + " " + d.de + (o.milk ? " mit " + o.milk.de : "") + (o.food ? " und " + o.food.de : ""), tail = o.togo ? ", zum Mitnehmen" : "";
+    const v = [`Ich hätte gern ${np}${tail}, bitte.`, `${np[0].toUpperCase() + np.slice(1)}${tail}, bitte.`, `Ich nehme ${np}${tail}.`, `Für mich ${np}${tail}, bitte.`];
+    const extras = D.drinks.map(x => x.de).concat(D.milks.map(m => m.de), ["ohne", "hier", "doppelten", "großen", "kleinen", "und", "für", "nehme", "Bagel", "Brot", "Omelette"]);
+    return addTiles({ type: "orderbuild", label: "Take the order", mode: "phrase", de: null, prompt: "The customer says: “" + orderEN(o) + "” — build the German sentence.", answers: v, show: v[0] }, dispTokens(v[0]), extras, r);
+  }
+  const articleQ = (p, r) => ({ type: "article", label: "Akkusativ", kind: "mc", de: null, prompt: "Ich hätte gern ___ " + p[0] + ", bitte.", options: ["einen", "eine", "ein"], correct: ["einen", "eine", "ein"].indexOf(p[1]), show: p[1] });
+  function vocabQ(p, all, r) {
+    const wrong = []; for (const x of shuffle(all.filter(x => x[0] !== p[0] && !x[1].some(a => p[1].includes(a))), r)) { if (!wrong.includes(x[1][0])) wrong.push(x[1][0]); if (wrong.length === 3) break; }
+    const options = shuffle([p[1][0]].concat(wrong), r);
+    return { type: "vocab", label: "Menu word", kind: "mc", de: p[0], speak: true, who: "Menu", prompt: "What does it mean?", options, correct: options.indexOf(p[1][0]), show: p[1][0] };
+  }
   function priceQuestion(kind, r) {
     if (kind === "total") {
       const n = r() < 0.5 ? 1 : 2, items = shuffle(D.priced, r).slice(0, n), cents = items.reduce((a, i) => a + i.price, 0);
-      return { type: "total", label: "Say the total", kind: "text", mode: "price", cents, de: null,
-        prompt: "Customer orders " + items.map(i => i.en + " (" + fmtEUR(i.price) + ")").join(" + ") + ". Say the total in words, e.g. “drei Euro achtzig”.",
-        answers: [priceShow(cents)], show: priceShow(cents) };
+      const q = { type: "total", label: "Say the total", mode: "price", cents, de: null,
+        prompt: "Customer orders " + items.map(i => i.en + " (" + fmtEUR(i.price) + ")").join(" + ") + ". Say the total.", answers: [priceShow(cents)], show: priceShow(cents) };
+      return addTiles(q, priceShow(cents).split(" "), NUMW.concat(["Cent", "und"]), r);
     }
     if (kind === "hear") {
-      const cents = pick(D.priced, r).price + (r() < 0.6 ? pick(D.priced, r).price : 0), say = priceShow(cents);
-      return { type: "hear", label: "Hear the price", kind: "text", mode: "digits", cents, de: "Das macht " + say + ".", speak: true, who: "Price",
-        prompt: "Type the amount in figures, e.g. 4,90", answers: [fmtEUR(cents).replace(" €", "")], show: fmtEUR(cents).replace(" €", "") };
+      const cents = pick(D.priced, r).price + (r() < 0.6 ? pick(D.priced, r).price : 0), say = priceShow(cents), set = [cents];
+      for (const d of shuffle([10, -10, 20, -20, 50, -50, 100, -100, 90, -90], r)) { const c = cents + d; if (c > 0 && !set.includes(c)) set.push(c); if (set.length === 4) break; }
+      const options = shuffle(set, r).map(fmtEUR);
+      return { type: "hear", label: "Hear the price", kind: "mc", de: "Das macht " + say + ".", speak: true, who: "Price", prompt: "How much is it?", options, correct: options.indexOf(fmtEUR(cents)), show: fmtEUR(cents) };
     }
     const total = pick(D.priced, r).price + (r() < 0.5 ? pick(D.priced, r).price : 0), pay = [500, 1000, 2000].find(p => p > total) || 5000, change = pay - total;
-    return { type: "change", label: "Give change", kind: "text", mode: "price", cents: change, de: "Hier sind " + num(pay / 100) + " Euro.", speak: true, who: "Customer",
-      prompt: "The order is " + fmtEUR(total) + ". Give them their change (Rückgeld) – type it in words.", answers: [priceShow(change)], show: priceShow(change) };
+    const q = { type: "change", label: "Give change", mode: "price", cents: change, de: "Hier sind " + num(pay / 100) + " Euro.", speak: true, who: "Customer",
+      prompt: "The order is " + fmtEUR(total) + ". Give them their change (Rückgeld).", answers: [priceShow(change)], show: priceShow(change) };
+    return addTiles(q, priceShow(change).split(" "), NUMW.concat(["Cent", "und"]), r);
   }
 
-  const SLOTS = ["order", "order", "ask", "ask", "reply", "price", "price", "article", "vocab", "vocab"];
+  // ---------- word-level diagnosis for written answers ----------
+  function diagnose(input, variants) {
+    const typedRaw = tokens(input), typed = typedRaw.map(norm);
+    let best = null;
+    for (const v of variants) {
+      const tv = tokens(v), tn = tv.map(norm), n = tv.length, m = typed.length;
+      const d = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+      for (let i = 0; i <= n; i++) d[i][0] = i; for (let j = 0; j <= m; j++) d[0][j] = j;
+      for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++)
+        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (tn[i - 1] === typed[j - 1] ? 0 : 1));
+      if (!best || d[n][m] < best.dist) best = { dist: d[n][m], tv, tn, d, n, m };
+    }
+    const { tv, tn, d } = best; let i = best.n, j = best.m; const ops = [], extra = [];
+    while (i > 0 || j > 0) {
+      if (i > 0 && j > 0 && tn[i - 1] === typed[j - 1] && d[i][j] === d[i - 1][j - 1]) { ops.unshift({ s: "ok", w: tv[i - 1] }); i--; j--; }
+      else if (i > 0 && j > 0 && d[i][j] === d[i - 1][j - 1] + 1) { ops.unshift({ s: "sub", w: tv[i - 1], typed: typedRaw[j - 1] }); i--; j--; }
+      else if (i > 0 && d[i][j] === d[i - 1][j] + 1) { ops.unshift({ s: "miss", w: tv[i - 1] }); i--; }
+      else { extra.unshift(typedRaw[j - 1]); j--; }
+    }
+    return { ops, extra, okCount: ops.filter(o => o.s === "ok").length };
+  }
+
+  const SLOTS = ["orderlisten", "orderbuild", "ask", "ask", "reply", "write", "price", "hear", "article", "vocab"];
   function makeSession(r) {
     r = r || Math.random;
-    const asks = shuffle(D.ask, r), replies = shuffle(D.reply, r), arts = shuffle(D.article, r), vocs = shuffle(D.vocab, r), kinds = shuffle(["total", "hear", "change"], r);
+    const asks = shuffle(D.ask, r), replies = shuffle(D.reply, r), arts = shuffle(D.article, r), vocs = shuffle(D.vocab, r);
     const q = [];
     for (const s of shuffle(SLOTS, r)) {
-      if (s === "order") q.push(orderQuestion(r));
-      else if (s === "ask") q.push(askQ(asks.pop()));
-      else if (s === "reply") q.push(replyQ(replies.pop()));
-      else if (s === "price") q.push(priceQuestion(kinds.pop(), r));
-      else if (s === "article") q.push(articleQ(arts.pop()));
-      else q.push(vocabQ(vocs.pop()));
+      if (s === "orderlisten") q.push(orderQuestion(r));
+      else if (s === "orderbuild") q.push(orderBuildQuestion(r));
+      else if (s === "ask") q.push(askQ(asks.pop(), r));
+      else if (s === "reply") q.push(replyQ(replies.pop(), r, false));
+      else if (s === "write") q.push(replyQ(replies.pop(), r, true));
+      else if (s === "price") q.push(priceQuestion(r() < 0.5 ? "total" : "change", r));
+      else if (s === "hear") q.push(priceQuestion("hear", r));
+      else if (s === "article") q.push(articleQ(arts.pop(), r));
+      else q.push(vocabQ(vocs.pop(), D.vocab, r));
     }
     return q;
   }
-  const api = { norm, num, priceShow, priceVariants, checkPrice, parseDigits, checkDigits, checkEnglish, check, clue, points, fmtEUR, orderDE, orderEN, orderQuestion, priceQuestion, makeSession, MAX, SLOTS };
+  const api = { diagnose, tokens, norm, num, priceShow, priceVariants, checkPrice, parseDigits, checkDigits, checkEnglish, check, clue, points, fmtEUR, orderDE, orderEN, orderQuestion, orderBuildQuestion, priceQuestion, makeSession, MAX, SLOTS };
   if (typeof module !== "undefined") module.exports = api; else root.Cafe = api;
 })(this);
