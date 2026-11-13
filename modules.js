@@ -6,5 +6,7 @@ window.MODULES = [
     blurb: "The 47 Samurai: type the meaning, then er/sie/es Präsens, Präteritum and Perfekt." },
   { title: "Regular Verbs", emoji: "🛠️", path: "modules/regular-verbs/index.html",
     blurb: "Präteritum and Perfekt of regular verbs: pick a person, type the form." },
+  { title: "Café Deutsch", emoji: "☕", path: "modules/cafe/index.html",
+    blurb: "Take orders in German: what you say (Sie), what customers say, prices, menu words. Optional audio." },
   // { title: "Next module", emoji: "🍺", path: "modules/xyz/index.html", blurb: "…" },
 ];
