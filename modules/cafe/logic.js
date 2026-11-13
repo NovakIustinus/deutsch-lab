@@ -166,7 +166,7 @@
     }
     const { tv, tn, d } = best; let i = best.n, j = best.m; const ops = [], extra = [];
     while (i > 0 || j > 0) {
-      if (i > 0 && j > 0 && tn[i - 1] === typed[j - 1] && d[i][j] === d[i - 1][j - 1]) { ops.unshift({ s: "ok", w: tv[i - 1] }); i--; j--; }
+      if (i > 0 && j > 0 && tn[i - 1] === typed[j - 1] && d[i][j] === d[i - 1][j - 1]) { ops.unshift({ s: "ok", w: tv[i - 1], j: j - 1 }); i--; j--; }
       else if (i > 0 && j > 0 && d[i][j] === d[i - 1][j - 1] + 1) { ops.unshift({ s: "sub", w: tv[i - 1], typed: typedRaw[j - 1] }); i--; j--; }
       else if (i > 0 && d[i][j] === d[i - 1][j] + 1) { ops.unshift({ s: "miss", w: tv[i - 1] }); i--; }
       else { extra.unshift(typedRaw[j - 1]); j--; }

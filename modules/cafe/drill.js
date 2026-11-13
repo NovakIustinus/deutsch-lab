@@ -47,7 +47,7 @@ function start(){ sess=Cafe.makeSession(); qi=0; log=[]; question(); }
 let built=[], fix=null;
 function setBubble(reveal){ const t=$("btx"); const hide=listenOn()&&!reveal&&!peeked; t.textContent=hide?"🎧 ••• listen •••":cur.de; t.classList.toggle("hid",hide); $("peek").classList.toggle("hidden",!hide); }
 function question(){
-  cur=sess[qi]; tries=0; gaveUp=false; wrongs=[]; peeked=false; built=[]; fix=null;
+  cur=sess[qi]; tries=0; gaveUp=false; wrongs=[]; peeked=false; built=[]; fix=null; slots=null;
   $("count").textContent=(qi+1)+"/"+N; $("bar").style.width=(qi/N*100)+"%"; $("vn").textContent=(qi+1)+" of "+N; $("chip").textContent=cur.label;
   $("doneRows").innerHTML=""; $("next").classList.add("hidden"); $("fb").innerHTML="";
   const hasDe=!!cur.de; $("bub").classList.toggle("hidden",!hasDe);
@@ -61,13 +61,19 @@ function question(){
   show("s-q"); if(k==="text") $("ans").focus();
   if(cur.de&&cur.speak&&audioOn()) setTimeout(()=>speak(cur.de),150);
 }
+let slots=null;
 function renderTiles(){
-  $("built").innerHTML=built.map((i,k)=>"<button type='button' class='tile' data-b='"+k+"'>"+esc(cur.tiles[i])+"</button>").join("");
-  $("bank").innerHTML=cur.tiles.map((w,i)=>"<button type='button' class='tile"+(built.includes(i)?" used":"")+"' data-t='"+i+"'>"+esc(w)+"</button>").join("");
-  $("tcheck").disabled=!built.length;
+  const inUse=new Set(slots?slots.filter(x=>x.idx!==null).map(x=>x.idx):built);
+  $("built").innerHTML=slots?slots.map((x,k)=>x.idx===null?"<span class='tile slot'>&nbsp;&nbsp;&nbsp;&nbsp;</span>":"<button type='button' class='tile"+(x.locked?" lock":"")+"' "+(x.locked?"disabled":"data-s='"+k+"'")+">"+esc(cur.tiles[x.idx])+"</button>").join("")
+    :built.map((i,k)=>"<button type='button' class='tile' data-b='"+k+"'>"+esc(cur.tiles[i])+"</button>").join("");
+  $("bank").innerHTML=cur.tiles.map((w,i)=>"<button type='button' class='tile"+(inUse.has(i)?" used":"")+"' data-t='"+i+"'>"+esc(w)+"</button>").join("");
+  $("tcheck").disabled=slots?slots.some(x=>x.idx===null):!built.length;
 }
-$("bank").addEventListener("click",e=>{ const b=e.target.closest("[data-t]"); if(!b) return; const i=+b.dataset.t; if(!built.includes(i)){ built.push(i); renderTiles(); } });
-$("built").addEventListener("click",e=>{ const b=e.target.closest("[data-b]"); if(!b) return; built.splice(+b.dataset.b,1); renderTiles(); });
+$("bank").addEventListener("click",e=>{ const b=e.target.closest("[data-t]"); if(!b) return; const i=+b.dataset.t;
+  if(slots){ const f=slots.find(x=>x.idx===null); if(f&&!slots.some(x=>x.idx===i)){ f.idx=i; renderTiles(); } }
+  else if(!built.includes(i)){ built.push(i); renderTiles(); } });
+$("built").addEventListener("click",e=>{ const b=e.target.closest("[data-b],[data-s]"); if(!b) return;
+  if(b.dataset.s!==undefined){ slots[+b.dataset.s].idx=null; } else built.splice(+b.dataset.b,1); renderTiles(); });
 $("play").addEventListener("click",()=>speak(cur.de));
 $("peek").addEventListener("click",()=>{ peeked=true; setBubble(false); });
 function finishQ(pts){
@@ -96,8 +102,13 @@ function attempt(text, shakeEl){
   else if(tries>=3) m+="<br><span class='small'>Clue:</span> <span class='cl'>"+esc(Cafe.clue(cur.show))+"</span>";
   $("fb").innerHTML=m; return false;
 }
-$("tcheck").addEventListener("click",()=>{ if(!built.length) return; const text=built.map(i=>cur.tiles[i]).join(" ");
-  if(!attempt(text,$("built"))){ built=[]; renderTiles(); } });
+$("tcheck").addEventListener("click",()=>{
+  const idxs=slots?slots.map(x=>x.idx):built, text=idxs.map(i=>cur.tiles[i]).join(" ");
+  if(attempt(text,$("built"))) return;
+  const d=Cafe.diagnose(text,cur.answers);
+  if(d.okCount>0&&!gaveUp){ slots=d.ops.map(o=>o.s==="ok"?{locked:true,idx:idxs[o.j]}:{locked:false,idx:null}); }
+  else { slots=null; built=[]; }
+  renderTiles(); });
 // written answer with per-word marking
 function showFixer(d){
   fix=d; const el=$("fixer");
@@ -120,7 +131,7 @@ $("form").addEventListener("submit",e=>{
 });
 $("fb").addEventListener("click",e=>{ if(e.target.id==="giveup"){ gaveUp=true;
   $("fb").innerHTML="<span class='bad'>Aufgegeben</span><br>Answer: <b class='ok'>"+esc(cur.show)+"</b> <span class='small'>— "+(cur.kind==="tiles"?"build it":"type it")+" to continue (no points)</span>";
-  if(cur.kind==="tiles"){ built=[]; renderTiles(); } else { fix=null; $("fixer").classList.add("hidden"); $("ans").classList.remove("hidden"); $("ans").value=""; $("ans").focus(); } } });
+  if(cur.kind==="tiles"){ built=[]; slots=null; renderTiles(); } else { fix=null; $("fixer").classList.add("hidden"); $("ans").classList.remove("hidden"); $("ans").value=""; $("ans").focus(); } } });
 $("next").addEventListener("click",()=>{ qi++; qi<N?question():finish(); });
 function finish(){
   $("bar").style.width="100%"; $("count").textContent=N+"/"+N;

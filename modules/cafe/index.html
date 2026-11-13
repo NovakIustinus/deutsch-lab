@@ -114,7 +114,7 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
 .built{min-height:62px;border-top:3px solid #dde;border-bottom:3px solid #dde;margin:10px 0;padding:6px 0;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-content:flex-start}
 .bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
 .tile{font:inherit;font-weight:800;font-size:1.1rem;padding:.45em .8em;border:3px solid var(--blue2);border-radius:12px;background:#fff;color:var(--blue2);box-shadow:0 4px 0 var(--blue2);cursor:pointer}
-.tile.used{visibility:hidden}.built .tile{background:#eef4ff}
+.tile.used{visibility:hidden}.tile.lock{background:#e3f4e6;border-color:var(--green);color:#1b5e20;box-shadow:0 4px 0 var(--green);opacity:1}.tile.slot{border-style:dashed;box-shadow:none;background:#fff;min-width:3.2em}.built .tile{background:#eef4ff}
 .fixer{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0}
 .fixer .w{font:inherit;font-weight:800;font-size:1.1rem;padding:.4em .6em;border-radius:10px;border:3px solid}
 .fixer .okw{background:#e3f4e6;border-color:var(--green);color:#1b5e20}
@@ -149,7 +149,7 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
   <div class="sec" style="text-align:center">5 · How it works</div>
   <div class="note" style="text-align:left;background:#eef4ff;border-color:var(--blue)">
    <b>Ordering = Akkusativ.</b> <i>Ich hätte gern <b>einen</b> Cappuccino</i> (der) · <i>Ich hätte gern <b>eine</b> heiße Schokolade</i> (die) · <i>Ich hätte gern <b>ein</b> Omelette</i> (das). Only <b>der → einen</b> changes.</div>
-  <div class="note" style="text-align:left"><b>10 questions, 4 points each (40 total), mostly tapping:</b> pick the English for a customer’s order · <b>tap the words</b> in order to build what you say (two “you ask”, one “you answer”, one order, one price) · hear a price and pick it · pick einen/eine/ein · pick a menu word’s meaning · plus <b>one written answer</b>. First try 4 pts, second 2, third 1. In the written answer, words you got right turn green and stay put — you only fix the red/missing ones. A clue appears after 3 wrong tries; after 5 you can give up and the answer is shown. Capitals and punctuation don’t matter; ä/ö/ü/ß can be typed ae/oe/ue/ss.</div>
+  <div class="note" style="text-align:left"><b>10 questions, 4 points each (40 total), mostly tapping:</b> pick the English for a customer’s order · <b>tap the words</b> in order to build what you say (two “you ask”, one “you answer”, one order, one price) · hear a price and pick it · pick einen/eine/ein · pick a menu word’s meaning · plus <b>one written answer</b>. First try 4 pts, second 2, third 1. After a wrong tap-answer, the tiles you got right turn green and stay in place and only the empty gaps need filling; the written answer works the same way, with the wrong words as inputs. A clue appears after 3 wrong tries; after 5 you can give up and the answer is shown. Capitals and punctuation don’t matter; ä/ö/ü/ß can be typed ae/oe/ue/ss.</div>
   <p><button class="btn primary go" style="font-size:1.2rem" disabled>Los geht’s!</button></p>
  </div>
 
