@@ -30,3 +30,6 @@ const seen = new Set(); for (let i = 0; i < 200; i++) R.makeSession(V,10).forEac
 for (const v of V) for (const p of R.PERSONS) for (const t of ["pra","perf"]) assert(R.checkForm(R.answer(v,p,t), v, p, t), v[0]);
 for (const v of V) assert(R.checkEnglish(R.englishAnswers(v)[0], v), v[0]);
 console.log("regular tests passed");
+// fixed-tense sessions (Präteritum / Perfekt modules)
+for (const t of ["pra","perf"]) for (let i = 0; i < 100; i++) R.makeSession(V,10,null,t).forEach(q => assert.strictEqual(q.tense,t));
+console.log("fixed-tense sessions ok");

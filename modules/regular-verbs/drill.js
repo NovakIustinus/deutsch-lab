@@ -1,13 +1,14 @@
 (function(){
-const $=id=>document.getElementById(id), N=10, MODULE="regular-verbs", V=window.RVERBS, MAXQ=Reg.MAX, MAX=N*MAXQ;
+const CFG=window.RV_CFG||{}, $=id=>document.getElementById(id), N=10, MODULE=CFG.module||"regular-verbs", V=window.RVERBS, MAXQ=Reg.MAX, MAX=N*MAXQ;
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
 const fmt=n=>String(Number(n.toFixed(2)));
-const KEY="regVerbsTop", URL_=(window.LEADERBOARD_URL||"").trim();
+const KEY=CFG.key||"regVerbsTop", BEST=CFG.bestKey||"regVerbsBestPct", URL_=(window.LEADERBOARD_URL||"").trim();
 const TL={pra:"Präteritum (simple past)",perf:"Perfekt (present perfect)"};
 let player="",sess,qi,cur,si,tries,gaveUp,wrongs,log,steps;
 const show=id=>{["s-intro","s-q","s-done"].forEach(s=>$(s).classList.toggle("hidden",s!==id));window.scrollTo(0,0);};
-$("vt").innerHTML="<tr><th>Verb</th><th>English</th><th>Präteritum<br><small>er/sie/es</small></th><th>Perfekt<br><small>er/sie/es</small></th></tr>"+V.map(v=>{
-  const p=Reg.PERSONS[2]; return "<tr><td class='iv'>"+v[0]+"</td><td class='en'>"+esc(v[1])+"</td><td class='p2'>"+Reg.pra(v,p)+"</td><td class='p3'>"+Reg.perf(v,p)+"</td></tr>"; }).join("");
+const showPra=CFG.tense!=="perf", showPerf=CFG.tense!=="pra";
+$("vt").innerHTML="<tr><th>Verb</th><th>English</th>"+(showPra?"<th>Präteritum<br><small>er/sie/es</small></th>":"")+(showPerf?"<th>Perfekt<br><small>er/sie/es</small></th>":"")+"</tr>"+V.map(v=>{
+  const p=Reg.PERSONS[2]; return "<tr><td class='iv'>"+v[0]+"</td><td class='en'>"+esc(v[1])+"</td>"+(showPra?"<td class='p2'>"+Reg.pra(v,p)+"</td>":"")+(showPerf?"<td class='p3'>"+Reg.perf(v,p)+"</td>":"")+"</tr>"; }).join("");
 // leaderboard
 const top10=a=>a.slice().sort((x,y)=>y.pct-x.pct||y.score-x.score||x.t-y.t).slice(0,10);
 function localBoard(){try{return top10(JSON.parse(localStorage.getItem(KEY))||[]);}catch(e){return [];}}
@@ -36,7 +37,7 @@ setGo();
 function begin(){ player=$("name").value.trim(); try{localStorage.setItem("caseDrillName",player);}catch(e){} start(); }
 GO.forEach(b=>b.addEventListener("click",()=>{ if(nameOk()) begin(); }));
 // session
-function start(){ sess=Reg.makeSession(V,N); qi=0; log=[]; question(); }
+function start(){ sess=Reg.makeSession(V,N,null,CFG.tense); qi=0; log=[]; question(); }
 function question(){
   cur=sess[qi]; cur.res=[]; si=0;
   steps=[{k:"en",base:1,show:cur.v[1]},{k:"form",base:3,show:Reg.answer(cur.v,cur.p,cur.tense)}];
@@ -82,15 +83,14 @@ function finish(){
   $("ring").style.setProperty("--p",pct); $("ring").style.setProperty("--col",col);
   $("pct").textContent=pct+"%"; $("pct").style.color=col; $("frac").textContent=fmt(score)+" / "+MAX;
   $("verdict").textContent=(player?player+": ":"")+(pct===100?"Perfekt! Verb-Meister! 🛠️🍺":pct>=80?"Sehr gut! Prost! 🍺":pct>=60?"Gut – weiter so! 🥨":pct>=40?"Geht so… noch eine Brezn?":"Oje. Zurück in die Schule! 📚");
-  let best=0; try{best=+localStorage.getItem("regVerbsBestPct")||0; if(pct>best){best=pct;localStorage.setItem("regVerbsBestPct",best);}}catch(e){}
+  let best=0; try{best=+localStorage.getItem(BEST)||0; if(pct>best){best=pct;localStorage.setItem(BEST,best);}}catch(e){}
   $("best").textContent=best?"Best on this device: "+best+"%":"";
   const sum=f=>log.filter(f).flatMap(q=>q.res).reduce((a,r)=>a+r.pts,0), cnt=f=>log.filter(f).length;
   $("n0").textContent=fmt(sum(()=>true)-0-log.reduce((a,q)=>a+q.res.filter(r=>r.k==="form").reduce((b,r)=>b+r.pts,0),0));
   $("m0").innerHTML="English<br>/ "+N;
-  $("n1").textContent=fmt(log.filter(q=>q.tense==="pra").reduce((a,q)=>a+q.res.filter(r=>r.k==="form").reduce((b,r)=>b+r.pts,0),0));
-  $("m1").innerHTML="Präteritum<br>/ "+cnt(q=>q.tense==="pra")*3;
-  $("n2").textContent=fmt(log.filter(q=>q.tense==="perf").reduce((a,q)=>a+q.res.filter(r=>r.k==="form").reduce((b,r)=>b+r.pts,0),0));
-  $("m2").innerHTML="Perfekt<br>/ "+cnt(q=>q.tense==="perf")*3;
+  const formSum=t=>fmt(log.filter(q=>!t||q.tense===t).reduce((a,q)=>a+q.res.filter(r=>r.k==="form").reduce((b,r)=>b+r.pts,0),0));
+  if(CFG.tense){ const lab=CFG.tense==="pra"?"Präteritum":"Perfekt"; $("n1").textContent=formSum(CFG.tense); $("m1").innerHTML=lab+"<br>/ "+N*3; $("n1").parentNode.style.background=CFG.tense==="pra"?"#7b1fa2":"#1b8a3a"; $("n2").parentNode.classList.add("hidden"); }
+  else { $("n1").textContent=formSum("pra"); $("m1").innerHTML="Präteritum<br>/ "+cnt(q=>q.tense==="pra")*3; $("n2").textContent=formSum("perf"); $("m2").innerHTML="Perfekt<br>/ "+cnt(q=>q.tense==="perf")*3; }
   $("review").innerHTML=log.map(q=>{ const p=q.res.reduce((a,r)=>a+r.pts,0), c=p===MAXQ?1:p>=MAXQ/2?2:3, en=q.res[0], fm=q.res[1];
     return "<div class='row r"+c+"'><span class='pts'>"+fmt(p)+"/"+MAXQ+"</span><b style='color:#b00020'>"+q.v[0]+"</b> <i>("+esc(q.v[1])+")</i><br>"+
      "<span class='small'>"+esc(q.p.label)+" · "+(q.tense==="pra"?"Präteritum":"Perfekt")+": <b>"+esc(q.p.pron+" "+fm.show)+"</b> "+(fm.pts===fm.base?"✔":"+"+fmt(fm.pts))+(fm.gaveUp?" (gave up)":"")+"</span>"+

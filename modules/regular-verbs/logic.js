@@ -47,9 +47,9 @@
   const pointsEn = (tries, gave) => gave ? 0 : (EN_F[tries - 1] || 0) * 1;
   const pointsForm = (tries, gave) => gave ? 0 : (FORM_F[tries - 1] || 0) * 3;
   function shuffle(a, rnd) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-  function makeSession(verbs, n, rnd) {
+  function makeSession(verbs, n, rnd, tense) {
     rnd = rnd || Math.random;
-    return shuffle(verbs, rnd).slice(0, n).map(v => ({ v, p: PERSONS[Math.floor(rnd() * PERSONS.length)], tense: rnd() < 0.5 ? "pra" : "perf" }));
+    return shuffle(verbs, rnd).slice(0, n).map(v => ({ v, p: PERSONS[Math.floor(rnd() * PERSONS.length)], tense: tense || (rnd() < 0.5 ? "pra" : "perf") }));
   }
   const api = { PERSONS, TENSES, norm, englishAnswers, checkEnglish, checkForm, answer, pra, perf, clue, pointsEn, pointsForm, makeSession, MAX: 4 };
   if (typeof module !== "undefined") module.exports = api; else root.Reg = api;

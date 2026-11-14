@@ -3,7 +3,9 @@
 const MODULES = {
   'case-drill':  { sheet: 'Scores',             cap: 90, legacy: 30 },   // module 1 (also used when no module is sent); rows saved before max existed were out of 30
   'irregular47': { sheet: 'Scores_irregular47', cap: 100 },   // module 2
-  'regular-verbs': { sheet: 'Scores_regular',   cap: 40  },    // module 3
+  'regular-verbs': { sheet: 'Scores_regular',   cap: 40  },    // module 3 (old combined version, kept so its scores stay readable)
+  'praeteritum':   { sheet: 'Scores_praeteritum', cap: 40 },    // module 3a
+  'perfekt':       { sheet: 'Scores_perfekt',   cap: 40  },    // module 3b
   'cafe':          { sheet: 'Scores_cafe',      cap: 40  }     // module 4 (Café Deutsch)
 };
 function mod_(name) { return MODULES[name || 'case-drill']; }
