@@ -11,7 +11,7 @@
     { id: "Sie", pron: "sie", label: "Sie (formal you)", end: "ten", h: "haben", s: "sind" }
   ];
   const TENSES = [{ id: "pra", label: "Präteritum (simple past)" }, { id: "perf", label: "Perfekt (present perfect)" }];
-  const ALT = { machen:["do","make"], wohnen:["live","reside"], leben:["live","be alive"], stellen:["put","place","stand"], legen:["lay","put","place"],
+  const ALT = { aufwachen:["wake","wake up","awake"], passieren:["occur","take place"], klettern:["climb"], joggen:["jog","run"], rutschen:["slip","slide","skid"], landen:["land"], folgen:["follow"], verreisen:["go away","travel away","go on a trip","leave on a trip"], stolpern:["trip","stumble","trip over"], machen:["do","make"], wohnen:["live","reside"], leben:["live","be alive"], stellen:["put","place","stand"], legen:["lay","put","place"],
     setzen:["put","set","seat","sit down"], suchen:["look for","search","search for"], glauben:["believe","think"], hören:["hear","listen"],
     reisen:["travel"], wandern:["hike","walk"], antworten:["answer","reply"], baden:["bathe","swim","have a bath"], studieren:["study"],
     probieren:["try","taste","try out"], reparieren:["repair","fix"], erzählen:["tell","narrate"], telefonieren:["phone","call","call someone","telephone"],
@@ -34,13 +34,14 @@
     const s = stripTo(String(input).trim().toLowerCase().replace(/\s+/g, " ")); if (!s) return false;
     return englishAnswers(v).some(a => a === s || (a.length >= 6 && lev(a, s) <= 1));
   }
-  function pra(v, p) { return v[2] + (v[5] ? "e" : "") + p.end; }
-  function perf(v, p) { return (v[4] === "s" ? p.s : p.h) + " " + v[3]; }
+  function pra(v, p) { return v[2] + (v[5] ? "e" : "") + p.end + (v[6] ? " " + v[6] : ""); }
+  function perf(v, p) { return (v[4] === "s" || v[4] === "b" ? p.s : p.h) + " " + v[3]; }
+  const perfAlt = (v, p) => v[4] === "b" ? [perf(v, p), p.h + " " + v[3]] : [perf(v, p)];
   const answer = (v, p, tense) => tense === "pra" ? pra(v, p) : perf(v, p);
   function checkForm(input, v, p, tense) {
     let s = norm(input).replace(/\s+/g, " "); if (!s) return false;
     s = s.replace(new RegExp("^" + p.pron + "\\s+"), "");
-    return s === norm(answer(v, p, tense));
+    return tense === "pra" ? s === norm(pra(v, p)) : perfAlt(v, p).some(a => s === norm(a));
   }
   function clue(text) { return text.split(" ").map(w => w[0] + "_".repeat(Math.max(0, w.length - 1))).join("  "); }
   const EN_F = [1, 0.5], FORM_F = [1, 0.5, 0.25];

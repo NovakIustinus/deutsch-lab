@@ -33,3 +33,13 @@ console.log("regular tests passed");
 // fixed-tense sessions (Präteritum / Perfekt modules)
 for (const t of ["pra","perf"]) for (let i = 0; i < 100; i++) R.makeSession(V,10,null,t).forEach(q => assert.strictEqual(q.tense,t));
 console.log("fixed-tense sessions ok");
+// new sein verbs
+{ const by2 = n => V.find(v => v[0] === n), A2 = (v, p, t) => R.answer(by2(v), P(p), t);
+  assert.strictEqual(V.length, 48);
+  assert.strictEqual(A2("aufwachen","ich","pra"),"wachte auf"); assert.strictEqual(A2("aufwachen","du","pra"),"wachtest auf"); assert.strictEqual(A2("aufwachen","er","perf"),"ist aufgewacht");
+  assert.strictEqual(A2("passieren","es","perf"),"ist passiert"); assert.strictEqual(A2("landen","ich","pra"),"landete"); assert.strictEqual(A2("landen","wir","perf"),"sind gelandet");
+  assert.strictEqual(A2("stolpern","ihr","pra"),"stolpertet"); assert.strictEqual(A2("verreisen","sie2","perf"),"sind verreist"); assert.strictEqual(A2("folgen","er","perf"),"ist gefolgt");
+  assert.ok(R.checkForm("ich wachte auf", by2("aufwachen"), P("ich"), "pra")); assert.ok(!R.checkForm("ich wachte", by2("aufwachen"), P("ich"), "pra"));
+  assert.ok(R.checkForm("ich bin geklettert", by2("klettern"), P("ich"), "perf") && R.checkForm("ich habe geklettert", by2("klettern"), P("ich"), "perf") && !R.checkForm("ich habe gewandert", by2("wandern"), P("ich"), "perf"));
+  assert.ok(R.checkEnglish("to wake up", by2("aufwachen")) && R.checkEnglish("happen", by2("passieren")) && R.checkEnglish("trip", by2("stolpern")));
+  assert.strictEqual(V.filter(v => v[4] !== "h").length, 11); console.log("new verbs ok"); }
