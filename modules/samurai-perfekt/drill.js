@@ -6,7 +6,7 @@ const KEY="samuraiPerfektTop", URL_=(window.LEADERBOARD_URL||"").trim();
 let player="",sess,vi,steps,si,tries,gaveUp,wrongs,log,cur;
 const show=id=>{["s-intro","s-verb","s-done"].forEach(s=>$(s).classList.toggle("hidden",s!==id));window.scrollTo(0,0);};
 // reference table
-$("vt").innerHTML="<tr><th>Verb</th><th>English</th><th>Perfekt<br><small>er/sie/es</small></th></tr>"+V.map(v=>
+$("vt").innerHTML="<tr><th>Verb</th><th>English</th><th>Perfekt<br><small>er/sie/es (other persons: swap hat/ist)</small></th></tr>"+V.map(v=>
  "<tr><td class='iv'>"+v[0]+"</td><td class='en'>"+esc(v[1])+"</td><td class='p3'>"+v[4].join(" / ")+"</td></tr>").join("");
 // leaderboard (shared via Apps Script, or local fallback)
 const top10=a=>a.slice().sort((x,y)=>y.pct-x.pct||y.score-x.score||x.t-y.t).slice(0,10);
@@ -46,7 +46,7 @@ function verb(){
 function openStep(){
   const s=steps[si]; tries=0; gaveUp=false; wrongs=[];
   $("slab").textContent=s.k==="en"?"What does it mean in English?":s.label+" →";
-  $("ans").placeholder=s.k==="en"?"type the English":s.k==="pf"?"e.g. hat gemacht":"type the German form";
+  $("ans").placeholder=s.k==="en"?"type the English":s.k==="pf"?"e.g. habe gemacht":"type the German form";
   $("ans").value=""; $("ans").disabled=false; $("check").classList.remove("hidden"); $("fb").innerHTML=""; $("ans").focus();
 }
 $("form").addEventListener("submit",e=>{

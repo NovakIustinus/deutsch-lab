@@ -7,7 +7,14 @@
     steigen:["climb","rise"], tragen:["carry","wear"], tun:["do"], ziehen:["pull","move"], wissen:["know"], haben:["have"], sein:["be"],
     werden:["become","get"], schlafen:["sleep"], schreiben:["write"], sprechen:["speak","talk"], treffen:["meet"], trinken:["drink"] };
   const norm = s => String(s).trim().toLowerCase().replace(/\s+/g, " ").replace(/ß/g, "ss").replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue");
-  const stripPron = s => s.replace(/^(er\/sie\/es|er|sie|es)\s+/, "");
+  const stripPron = s => s.replace(/^(er\/sie\/es|sie\/sie|ich|du|er|sie|es|wir|ihr)\s+/, "");
+  const PRON = ["ich", "du", "er/sie/es", "wir", "ihr", "sie/Sie"];
+  const AUX = { haben: ["habe", "hast", "hat", "haben", "habt", "haben"], sein: ["bin", "bist", "ist", "sind", "seid", "sind"] };
+  // v[4][0] is the er/sie/es form ("hat gehabt" / "ist gewesen"): swap the auxiliary for the person asked
+  function perfFor(v, p) {
+    const w = v[4][0].split(" "), aux = w[0] === "ist" ? AUX.sein : AUX.haben;
+    return [aux[p] + " " + w.slice(1).join(" ")];
+  }
   function lev(a, b) {
     const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
     for (let j = 1; j <= b.length; j++) d[0][j] = j;
@@ -34,8 +41,9 @@
   }
   // steps for one verb: English (1 pt) + up to 3 forms (3 pts each)
   function steps(v) {
+    const p = v._p == null ? 2 : v._p, ans = perfFor(v, p);
     return [{ k: "en", label: "English", base: 1, show: v[1] },
-            { k: "pf", label: "er/sie/es — Perfekt (present perfect: hat/ist + Partizip II)", base: 3, answers: v[4], show: v[4].join(" / ") }];
+            { k: "pf", label: PRON[p] + " — Perfekt (haben/sein + Partizip II)", pron: PRON[p], base: 3, answers: ans, show: PRON[p] + " " + ans[0] }];
   }
   const check = (v, step, input) => step.k === "en" ? checkEnglish(input, v) : checkForm(input, step.answers);
   function clue(v, step) {
@@ -46,7 +54,12 @@
   const points = (base, tries, gaveUp) => gaveUp ? 0 : base * (TRY_FACTOR[tries - 1] || 0);
   const maxFor = v => steps(v).reduce((a, s) => a + s.base, 0);
   function shuffle(a, rnd) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-  const makeSession = (verbs, n, rnd) => shuffle(verbs, rnd || Math.random).slice(0, n);
-  const api = { norm, checkEnglish, englishAnswers, checkForm, steps, check, clue, points, maxFor, makeSession };
+  // each verb gets a person; the deck runs through all six before repeating, so the pronouns are spread evenly
+  function makeSession(verbs, n, rnd) {
+    rnd = rnd || Math.random;
+    const deck = shuffle([0, 1, 2, 3, 4, 5], rnd).concat(shuffle([0, 1, 2, 3, 4, 5], rnd), shuffle([0, 1, 2, 3, 4, 5], rnd));
+    return shuffle(verbs, rnd).slice(0, n).map((v, i) => { const c = v.slice(); c._p = deck[i % deck.length]; return c; });
+  }
+  const api = { PRON, perfFor, norm, checkEnglish, englishAnswers, checkForm, steps, check, clue, points, maxFor, makeSession };
   if (typeof module !== "undefined") module.exports = api; else root.Irr = api;
 })(this);
