@@ -6,7 +6,8 @@ const MODULES = {
   'regular-verbs': { sheet: 'Scores_regular',   cap: 40  },    // module 3 (old combined version, kept so its scores stay readable)
   'praeteritum':   { sheet: 'Scores_praeteritum', cap: 40 },    // module 3a
   'perfekt':       { sheet: 'Scores_perfekt',   cap: 40  },    // module 3b
-  'cafe':          { sheet: 'Scores_cafe',      cap: 40  }     // module 4 (Café Deutsch)
+  'cafe':          { sheet: 'Scores_cafe',      cap: 40  },    // module 4 (Café Deutsch)
+  'samurai-perfekt': { sheet: 'Scores_samurai_perfekt', cap: 40 } // module 5 (first 10 Samurai, Perfekt only)
 };
 function mod_(name) { return MODULES[name || 'case-drill']; }
 function sheet_(m) {
