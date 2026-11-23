@@ -1,8 +1,8 @@
 (function(){
-const $=id=>document.getElementById(id), MODULE="samurai-perfekt", V=window.VERBS, N=V.length;
+const $=id=>document.getElementById(id), MODULE="47-part-1", V=window.VERBS, N=V.length;
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
 const fmt=n=>String(Number(n.toFixed(2)));
-const KEY="samuraiPerfektTop", URL_=(window.LEADERBOARD_URL||"").trim();
+const KEY="part1Top", URL_=(window.LEADERBOARD_URL||"").trim();
 let player="",sess,vi,steps,si,tries,gaveUp,wrongs,log,cur;
 const show=id=>{["s-intro","s-verb","s-done"].forEach(s=>$(s).classList.toggle("hidden",s!==id));window.scrollTo(0,0);};
 // reference table
@@ -22,7 +22,7 @@ async function renderBoard(id,hl,mine){
   try{ b=await getBoard(); }catch(e){ el.innerHTML="<div class='lbempty'>Leaderboard offline — try again later.</div>"; return; }
   const isMe=r=>hl&&r.t===hl;
   let h=b.length?"<table class='lb'><tr><th>#</th><th>Name</th><th>Score</th><th style='text-align:right'>%</th></tr>"+
-   b.map((r,k)=>"<tr"+(isMe(r)?" class='me'":"")+"><td>"+(k+1)+"</td><td>"+esc(r.name)+"</td><td>"+fmt(r.score)+"/"+(r.max||40)+"</td><td class='pc'>"+r.pct+"%</td></tr>").join("")+"</table>"
+   b.map((r,k)=>"<tr"+(isMe(r)?" class='me'":"")+"><td>"+(k+1)+"</td><td>"+esc(r.name)+"</td><td>"+fmt(r.score)+"/"+(r.max||92)+"</td><td class='pc'>"+r.pct+"%</td></tr>").join("")+"</table>"
    :"<div class='lbempty'>Nobody yet — be the first!</div>";
   if(mine) h+=b.some(isMe)?"<div class='small'>🎉 You’re on the board!</div>":"<div class='small'>Your run: "+fmt(mine.score)+"/"+mine.max+" — not in the top 10 this time.</div>";
   el.innerHTML=h;
@@ -78,7 +78,7 @@ function finish(){
   $("ring").style.setProperty("--p",pct); $("ring").style.setProperty("--col",col);
   $("pct").textContent=pct+"%"; $("pct").style.color=col; $("frac").textContent=fmt(score)+" / "+max;
   $("verdict").textContent=(player?player+": ":"")+(pct===100?"Perfekt! Samurai-Meister! ⚔️🍺":pct>=80?"Sehr gut! Prost! 🍺":pct>=60?"Gut – weiter so! 🥨":pct>=40?"Geht so… noch eine Brezn?":"Oje. Zurück in die Schule! 📚");
-  let best=0; try{best=+localStorage.getItem("samuraiPerfektBestPct")||0; if(pct>best){best=pct;localStorage.setItem("samuraiPerfektBestPct",best);}}catch(e){}
+  let best=0; try{best=+localStorage.getItem("part1BestPct")||0; if(pct>best){best=pct;localStorage.setItem("part1BestPct",best);}}catch(e){}
   $("best").textContent=best?"Best on this device: "+best+"%":"";
   ["en","pf"].forEach((k,i)=>{ const R=all.filter(r=>r.k===k); $("n"+i).textContent=fmt(R.reduce((a,r)=>a+r.pts,0)); $("m"+i).innerHTML=["English","Perfekt (present perfect)"][i]+"<br>/ "+R.reduce((a,r)=>a+r.base,0); });
   $("review").innerHTML=log.map(v=>{ const p=v._res.reduce((a,r)=>a+r.pts,0), m=Irr.maxFor(v), c=p===m?1:p>=m/2?2:3;

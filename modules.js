@@ -12,7 +12,7 @@ window.MODULES = [
     blurb: "Take orders in German: what you say (Sie), what customers say, prices, menu words. Optional audio." },
   { title: "Spickzettel A1 + A2", emoji: "📋", path: "reference.html",
     blurb: "All the tables in one place: cases, tenses, reflexives, adjectives, the 47 verbs, café phrases." },
-  { title: "Samurai · Perfekt", emoji: "⚔️", path: "modules/samurai-perfekt/index.html",
-    blurb: "The first 10 of the 47 Samurai verbs, Perfekt only: type the English and hat/ist + participle." },
+  { title: "47 · Part 1", emoji: "⚔️", path: "modules/47-part-1/index.html",
+    blurb: "First half of the 47 Samurai verbs (23), Perfekt only: type the English, then the Perfekt for a different person each time." },
   // { title: "Next module", emoji: "🍺", path: "modules/xyz/index.html", blurb: "…" },
 ];
