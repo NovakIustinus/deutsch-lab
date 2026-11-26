@@ -1,5 +1,5 @@
 (function(){
-const $=id=>document.getElementById(id), MODULE="47-part-1", V=window.VERBS, N=V.length;
+const $=id=>document.getElementById(id), MODULE="47-part-1", V=window.VERBS, N=10;
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
 const fmt=n=>String(Number(n.toFixed(2)));
 const KEY="part1Top", URL_=(window.LEADERBOARD_URL||"").trim();
@@ -22,7 +22,7 @@ async function renderBoard(id,hl,mine){
   try{ b=await getBoard(); }catch(e){ el.innerHTML="<div class='lbempty'>Leaderboard offline — try again later.</div>"; return; }
   const isMe=r=>hl&&r.t===hl;
   let h=b.length?"<table class='lb'><tr><th>#</th><th>Name</th><th>Score</th><th style='text-align:right'>%</th></tr>"+
-   b.map((r,k)=>"<tr"+(isMe(r)?" class='me'":"")+"><td>"+(k+1)+"</td><td>"+esc(r.name)+"</td><td>"+fmt(r.score)+"/"+(r.max||92)+"</td><td class='pc'>"+r.pct+"%</td></tr>").join("")+"</table>"
+   b.map((r,k)=>"<tr"+(isMe(r)?" class='me'":"")+"><td>"+(k+1)+"</td><td>"+esc(r.name)+"</td><td>"+fmt(r.score)+"/"+(r.max||40)+"</td><td class='pc'>"+r.pct+"%</td></tr>").join("")+"</table>"
    :"<div class='lbempty'>Nobody yet — be the first!</div>";
   if(mine) h+=b.some(isMe)?"<div class='small'>🎉 You’re on the board!</div>":"<div class='small'>Your run: "+fmt(mine.score)+"/"+mine.max+" — not in the top 10 this time.</div>";
   el.innerHTML=h;
@@ -36,7 +36,8 @@ setGo();
 function begin(){ player=$("name").value.trim(); try{localStorage.setItem("caseDrillName",player);}catch(e){} start(); }
 GO.forEach(b=>b.addEventListener("click",()=>{ if(nameOk()) begin(); }));
 // session
-function start(){ sess=Irr.makeSession(V,N); vi=0; log=[]; verb(); }
+const S=SRS.make("47-part-1"); SRS.badge(S,V.map(v=>v[0]),document.getElementById("srsline"));
+function start(){ sess=Irr.makeSession(S.pick(V,N,v=>v[0]),N); vi=0; log=[]; verb(); }
 function verb(){
   cur=sess[vi]; steps=Irr.steps(cur); si=0; cur._res=[];
   $("count").textContent=(vi+1)+"/"+N; $("bar").style.width=(vi/N*100)+"%"; $("vn").textContent=(vi+1)+" of "+N;
@@ -66,7 +67,7 @@ $("form").addEventListener("submit",e=>{
   $("doneRows").insertAdjacentHTML("beforeend","<div class='done-row'><div><small>"+esc(s.k==="en"?"English":s.label)+"</small>"+esc(s.k==="en"?v.trim():s.show)+"</div><div>+"+fmt(pts)+"<small>/ "+s.base+"</small></div></div>");
   si++;
   if(si<steps.length){ openStep(); }
-  else{ log.push(cur); $("active").classList.add("hidden"); $("next").classList.remove("hidden"); $("next").textContent=vi===N-1?"Ergebnis →":"Weiter →"; $("next").focus(); }
+  else{ S.record(cur[0],S.grade(cur._res.reduce((a,r)=>a+r.pts,0),Irr.maxFor(cur))); log.push(cur); $("active").classList.add("hidden"); $("next").classList.remove("hidden"); $("next").textContent=vi===N-1?"Ergebnis →":"Weiter →"; $("next").focus(); }
 });
 $("fb").addEventListener("click",e=>{ if(e.target.id==="giveup"){ gaveUp=true; const s=steps[si];
   $("fb").innerHTML="<span class='bad'>Aufgegeben</span><br>Answer: <b class='ok'>"+esc(s.show)+"</b> <span class='small'>— type it in to continue (no points)</span>"; $("ans").value=""; $("ans").focus(); } });

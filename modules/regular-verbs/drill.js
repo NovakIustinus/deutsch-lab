@@ -37,7 +37,8 @@ setGo();
 function begin(){ player=$("name").value.trim(); try{localStorage.setItem("caseDrillName",player);}catch(e){} start(); }
 GO.forEach(b=>b.addEventListener("click",()=>{ if(nameOk()) begin(); }));
 // session
-function start(){ sess=Reg.makeSession(V,N,null,CFG.tense); qi=0; log=[]; question(); }
+const S=SRS.make(MODULE); SRS.badge(S,V.map(v=>v[0]),document.getElementById("srsline"));
+function start(){ sess=Reg.makeSession(S.pick(V,N,v=>v[0]),N,null,CFG.tense); qi=0; log=[]; question(); }
 function question(){
   cur=sess[qi]; cur.res=[]; si=0;
   steps=[{k:"en",base:1,show:cur.v[1]},{k:"form",base:3,show:Reg.answer(cur.v,cur.p,cur.tense)}];
@@ -71,7 +72,7 @@ $("form").addEventListener("submit",e=>{
   $("doneRows").insertAdjacentHTML("beforeend","<div class='done-row'><div><small>"+(s.k==="en"?"English":cur.tense==="pra"?"Präteritum":"Perfekt")+"</small>"+esc(s.k==="en"?v.trim():cur.p.pron+" "+s.show)+"</div><div>+"+fmt(pts)+"<small>/ "+s.base+"</small></div></div>");
   si++;
   if(si<steps.length) openStep();
-  else{ log.push(cur); $("active").classList.add("hidden"); $("next").classList.remove("hidden"); $("next").textContent=qi===N-1?"Ergebnis →":"Weiter →"; $("next").focus(); }
+  else{ S.record(cur.v[0],S.grade(cur.res.reduce((a,r)=>a+r.pts,0),MAXQ)); log.push(cur); $("active").classList.add("hidden"); $("next").classList.remove("hidden"); $("next").textContent=qi===N-1?"Ergebnis →":"Weiter →"; $("next").focus(); }
 });
 $("fb").addEventListener("click",e=>{ if(e.target.id==="giveup"){ gaveUp=true; const s=steps[si];
   $("fb").innerHTML="<span class='bad'>Aufgegeben</span><br>Answer: <b class='ok'>"+esc(s.show)+"</b> <span class='small'>— type it in to continue (no points)</span>"; $("ans").value=""; $("ans").focus(); } });

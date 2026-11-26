@@ -175,23 +175,26 @@
   }
 
   const SLOTS = ["orderlisten", "orderbuild", "ask", "ask", "reply", "write", "price", "hear", "article", "vocab"];
-  function makeSession(r) {
-    r = r || Math.random;
-    const asks = shuffle(D.ask, r), replies = shuffle(D.reply, r), arts = shuffle(D.article, r), vocs = shuffle(D.vocab, r);
+  // ids used for spaced repetition; rank(list, kind) must return the list with the best candidate LAST (we pop from the end)
+  const SID = { ask: p => "ask:" + p.a[0], reply: p => "reply:" + p.a[0], article: p => "article:" + p[0], vocab: p => "vocab:" + p[0] };
+  const tag = (q, id) => { q.sid = id; return q; };
+  function makeSession(r, rank) {
+    r = r || Math.random; rank = rank || ((l) => shuffle(l, r));
+    const asks = rank(D.ask, "ask"), replies = rank(D.reply, "reply"), arts = rank(D.article, "article"), vocs = rank(D.vocab, "vocab");
     const q = [];
     for (const s of shuffle(SLOTS, r)) {
       if (s === "orderlisten") q.push(orderQuestion(r));
       else if (s === "orderbuild") q.push(orderBuildQuestion(r));
-      else if (s === "ask") q.push(askQ(asks.pop(), r));
-      else if (s === "reply") q.push(replyQ(replies.pop(), r, false));
-      else if (s === "write") q.push(replyQ(replies.pop(), r, true));
+      else if (s === "ask") { const p = asks.pop(); q.push(tag(askQ(p, r), SID.ask(p))); }
+      else if (s === "reply") { const p = replies.pop(); q.push(tag(replyQ(p, r, false), SID.reply(p))); }
+      else if (s === "write") { const p = replies.pop(); q.push(tag(replyQ(p, r, true), SID.reply(p))); }
       else if (s === "price") q.push(priceQuestion(r() < 0.5 ? "total" : "change", r));
       else if (s === "hear") q.push(priceQuestion("hear", r));
-      else if (s === "article") q.push(articleQ(arts.pop(), r));
-      else q.push(vocabQ(vocs.pop(), D.vocab, r));
+      else if (s === "article") { const p = arts.pop(); q.push(tag(articleQ(p, r), SID.article(p))); }
+      else { const p = vocs.pop(); q.push(tag(vocabQ(p, D.vocab, r), SID.vocab(p))); }
     }
     return q;
   }
-  const api = { diagnose, tokens, norm, num, priceShow, priceVariants, checkPrice, parseDigits, checkDigits, checkEnglish, check, clue, points, fmtEUR, orderDE, orderEN, orderQuestion, orderBuildQuestion, priceQuestion, makeSession, MAX, SLOTS };
+  const api = { diagnose, tokens, norm, num, priceShow, priceVariants, checkPrice, parseDigits, checkDigits, checkEnglish, check, clue, points, fmtEUR, orderDE, orderEN, orderQuestion, orderBuildQuestion, priceQuestion, makeSession, MAX, SLOTS, SID };
   if (typeof module !== "undefined") module.exports = api; else root.Cafe = api;
 })(this);

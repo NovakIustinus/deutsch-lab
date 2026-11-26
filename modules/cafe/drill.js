@@ -42,7 +42,9 @@ try{ $("name").value=localStorage.getItem("caseDrillName")||""; }catch(e){}
 setGo();
 function begin(){ player=$("name").value.trim(); store("caseDrillName",player); start(); }
 GO.forEach(b=>b.addEventListener("click",()=>{ if(nameOk()) begin(); }));
-function start(){ sess=Cafe.makeSession(); qi=0; log=[]; question(); }
+const S=SRS.make("cafe"), SID=Cafe.SID;
+SRS.badge(S,[].concat(D.ask.map(SID.ask),D.reply.map(SID.reply),D.article.map(SID.article),D.vocab.map(SID.vocab)),document.getElementById("srsline"));
+function start(){ sess=Cafe.makeSession(null,(l,k)=>S.rank(l,SID[k]).reverse()); qi=0; log=[]; question(); }
 // ---- question ----
 let built=[], fix=null;
 function setBubble(reveal){ const t=$("btx"); const hide=listenOn()&&!reveal&&!peeked; t.textContent=hide?"🎧 ••• listen •••":cur.de; t.classList.toggle("hid",hide); $("peek").classList.toggle("hidden",!hide); }
@@ -77,7 +79,7 @@ $("built").addEventListener("click",e=>{ const b=e.target.closest("[data-b],[dat
 $("play").addEventListener("click",()=>speak(cur.de));
 $("peek").addEventListener("click",()=>{ peeked=true; setBubble(false); });
 function finishQ(pts){
-  cur.pts=pts; cur.tries=tries; cur.gaveUp=gaveUp; cur.wrongs=wrongs.slice(); log.push(cur);
+  cur.pts=pts; cur.tries=tries; cur.gaveUp=gaveUp; cur.wrongs=wrongs.slice(); if(cur.sid) S.record(cur.sid,S.grade(pts,MAXQ)); log.push(cur);
   if(cur.de) setBubble(true);
   $("active").classList.add("hidden"); $("tilesBox").classList.add("hidden"); $("fb").innerHTML="";
   $("doneRows").innerHTML="<div class='done-row'><div><small>Answer</small>"+esc(cur.show)+"</div><div>+"+fmt(pts)+"<small>/ "+MAXQ+"</small></div></div>";

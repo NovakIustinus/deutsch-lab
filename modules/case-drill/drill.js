@@ -37,7 +37,8 @@ $("name").addEventListener("keydown",e=>{ if(e.key==="Enter"&&nameOk()){e.preven
 try{ $("name").value=localStorage.getItem("caseDrillName")||""; }catch(e){}
 setGo();
 function begin(){ player=$("name").value.trim(); try{localStorage.setItem("caseDrillName",player);}catch(e){} start(); }
-function start(){sess=Drill.makeSession(window.WORDS,N);i=0;log=[];sess.forEach(q=>{q.hasPl=!!Drill.plurals(q.noun);q.per=BASE+(q.hasPl?PPTS[0]:0);});MAX=sess.reduce((a,q)=>a+q.per,0);round();}
+const S=SRS.make("case-drill"); SRS.badge(S,window.WORDS.map(w=>w[0]),document.getElementById("srsline"));
+function start(){sess=Drill.makeSession(S.pick(window.WORDS,N,w=>w[0]),N);i=0;log=[];sess.forEach(q=>{q.hasPl=!!Drill.plurals(q.noun);q.per=BASE+(q.hasPl?PPTS[0]:0);});MAX=sess.reduce((a,q)=>a+q.per,0);round();}
 function round(){
   const q=sess[i]; wrongTaps=0; gOk=false; eOk=false; engTries=0; gaveUpE=false;
   $("count").textContent=(i+1)+"/"+N; $("bar").style.width=(i/N*100)+"%";
@@ -106,7 +107,7 @@ $("form").addEventListener("submit",e=>{
     inp.select(); return;
   }
   const cp=PTS[tries-1]||0, gp=wrongTaps===0?1:0, ep=engTries===0?1:0, pp=!q.hasPl||gaveUpP?0:(PPTS[plTries]||0), pts=gp+ep+cp+pp;
-  log.push({q,tries,cp,gp,ep,pp,plTries,pts,wrong:wrongTyped.slice()});
+  log.push({q,tries,cp,gp,ep,pp,plTries,pts,wrong:wrongTyped.slice()}); S.record(q.noun,S.grade(pts,q.per));
   $("ans").disabled=true; $("check").classList.add("hidden");
   $("resline").innerHTML="<span class='ok'>Richtig! ✔ "+q.answer+" "+q.noun+"</span><br><span class='small'>"+"Gender +"+fmt(gp)+" · English +"+fmt(ep)+(q.hasPl?" · Plural +"+fmt(pp):"")+" · Case +"+fmt(cp)+" = <b>"+fmt(pts)+"</b> / "+q.per+"</span>";
   $("next").classList.remove("hidden"); $("next").textContent=i===N-1?"Ergebnis →":"Weiter →";

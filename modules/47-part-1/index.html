@@ -89,10 +89,11 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
 
  <div id="s-intro" class="card intro">
   <h2 class="fraktur" style="font-size:2rem">47 · Part 1</h2>
-  <div class="small">The first half of the 47 Samurai (23 verbs) — present perfect only</div>
+  <div class="small">The first half of the 47 Samurai (23 verbs) — present perfect only, smart practice</div>
   <div class="nm"><label for="name">1 · Dein Name? (your name)</label>
    <input type="text" id="name" maxlength="20" placeholder="type your name to start" autocomplete="off" style="margin-bottom:0"></div>
   <p style="margin:6px 0"><button class="btn primary go" style="font-size:1.2rem" disabled>Los geht’s!</button></p>
+  <div class="small" id="srsline" style="background:#eef6ff;border:2px solid #b9d7f5;border-radius:12px;padding:6px 10px;margin:10px 0;text-align:left"></div>
   <div class="sec" style="text-align:center">2 · 🏆 Top 10 of all time</div><div id="lb0"></div>
   <div class="sec" style="text-align:center">3 · What the words mean</div>
   <div class="note" style="text-align:left;background:#eef4ff;border-color:var(--blue)">
@@ -105,7 +106,7 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
   <div class="sec" style="text-align:center">4 · The 23 verbs</div>
   <div class="small"><span style="color:#1b8a3a;font-weight:800">Perfekt (present perfect)</span></div>
   <div class="tw"><table class="vt" id="vt"></table></div>
-  <div class="note" style="text-align:left"><b>Per verb (max 4, 23 verbs, 92 per round):</b> type the English meaning (1 pt), then the Perfekt for the person shown (ich, du, er/sie/es, wir, ihr or sie/Sie, a different one each time) typed out in full with the right haben/sein form (3 pts), e.g. <i>habe gehabt</i>, <i>bist gewesen</i>. All 23 verbs come up every round, in random order. Points: full on the first try, half on the 2nd, a quarter on the 3rd, then 0. A clue appears after 3 wrong guesses; after 5 you can give up and the answer is shown — you still have to type it. ß = ss and ä/ö/ü = ae/oe/ue are accepted.</div>
+  <div class="note" style="text-align:left"><b>Per verb (max 4, 10 verbs per round, 40 points):</b> type the English meaning (1 pt), then the Perfekt for the person shown (ich, du, er/sie/es, wir, ihr or sie/Sie, a different one each time) typed out in full with the right haben/sein form (3 pts), e.g. <i>habe gehabt</i>, <i>bist gewesen</i>. Each round has 10 of the 23 verbs, chosen by smart practice (the ones you miss come back sooner), in random order. Points: full on the first try, half on the 2nd, a quarter on the 3rd, then 0. A clue appears after 3 wrong guesses; after 5 you can give up and the answer is shown — you still have to type it. ß = ss and ä/ö/ü = ae/oe/ue are accepted.</div>
   <p><button class="btn primary go" style="font-size:1.2rem" disabled>Los geht’s!</button></p>
  </div>
 
@@ -140,5 +141,5 @@ table.t th,table.t td{padding:6px 4px;border-radius:8px;font-weight:800}
   <a class="btn" href="../../index.html">Zur Hütte</a>
  </div>
 </div>
-<script src="../../config.js"></script><script src="verbs.js"></script><script src="logic.js"></script><script src="drill.js"></script>
+<script src="../../config.js"></script><script src="../../srs.js"></script><script src="verbs.js"></script><script src="logic.js"></script><script src="drill.js"></script>
 </body></html>
